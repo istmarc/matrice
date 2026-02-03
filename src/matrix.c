@@ -1,197 +1,264 @@
 #include "../inc/matrix.h"
 
+#include <stdio.h>
+
 matrix_data *matrix_data_make(data_type type, uint32_t shape[2],
                               uint32_t strides[2]) {
-  // Compute the size
-  uint32_t size = shape[0] * shape[1];
-  if (size == 0) {
-    fprintf(stderr, "Error size must be positive.\n");
-    exit(EXIT_FAILURE);
-  }
-  // Allocate the data
-  void *data = NULL;
-  if (type == kint) {
-    data = (int *)malloc(size * sizeof(int));
-  } else if (type == kfloat) {
-    data = (float *)malloc(size * sizeof(float));
-  } else if (type == kdouble) {
-    data = (double *)malloc(size * sizeof(double));
-  }
+	// Compute the size
+	uint32_t size = shape[0] * shape[1];
+	if (size == 0) {
+		fprintf(stderr, "Error size must be positive.\n");
+		exit(EXIT_FAILURE);
+	}
+	// Allocate the data
+	void *data = NULL;
+	if (type == kint) {
+		data = (int *)malloc(size * sizeof(int));
+	} else if (type == kfloat) {
+		data = (float *)malloc(size * sizeof(float));
+	} else if (type == kdouble) {
+		data = (double *)malloc(size * sizeof(double));
+	}
 
-  if (!data) {
-    fprintf(stderr, "Error unknown data type.\n");
-    exit(EXIT_FAILURE);
-  }
+	if (!data) {
+		fprintf(stderr, "Error unknown data type.\n");
+		exit(EXIT_FAILURE);
+	}
 
-  matrix_data *mat = malloc(sizeof(matrix_data));
-  if (!mat) {
-    fprintf(stderr, "Error allocating matrix_data.\n");
-    exit(EXIT_FAILURE);
-  }
+	matrix_data *mat = malloc(sizeof(matrix_data));
+	if (!mat) {
+		fprintf(stderr, "Error allocating matrix_data.\n");
+		exit(EXIT_FAILURE);
+	}
 
-  mat->data = data;
-  mat->size = size;
-  mat->shape[0] = shape[0];
-  mat->shape[1] = shape[1];
-  mat->strides[0] = strides[0];
-  mat->strides[1] = strides[1];
-  mat->type = type;
+	mat->data = data;
+	mat->size = size;
+	mat->shape[0] = shape[0];
+	mat->shape[1] = shape[1];
+	mat->strides[0] = strides[0];
+	mat->strides[1] = strides[1];
+	mat->type = type;
 
-  return mat;
+	return mat;
 }
 
 uint32_t compute_offset(uint32_t strides[2], uint32_t row, uint32_t col) {
-  return row * strides[0] + col * strides[1];
+	return row * strides[0] + col * strides[1];
 }
 
 void matrix_data_print(matrix_data *matdata) {
-  uint32_t rows = matdata->shape[0];
-  uint32_t cols = matdata->shape[1];
-  printf("matrix ");
-  if (matdata->type == kint) {
-    printf("int");
-  } else if (matdata->type == kfloat) {
-    printf("float");
-  } else if (matdata->type == kdouble) {
-    printf("double");
-  }
-  printf("\n");
-  for (uint32_t i = 0; i < rows; i++) {
-    for (uint32_t j = 0; j < cols; j++) {
-      uint32_t offset = compute_offset(matdata->strides, i, j);
-      if (matdata->type == kint) {
-        int *casted_data = (int *)matdata->data;
-        printf("%i", casted_data[offset]);
-      } else if (matdata->type == kfloat) {
-        float *casted_data = (float *)matdata->data;
-        printf("%f", casted_data[offset]);
-      } else if (matdata->type == kdouble) {
-        double *casted_data = (double *)matdata->data;
-        printf("%f", casted_data[offset]);
-      }
-      if (j + 1 < cols) {
-        printf(" ");
-      }
-    }
-    printf("\n");
-  }
+	uint32_t rows = matdata->shape[0];
+	uint32_t cols = matdata->shape[1];
+	printf("matrix[");
+	if (matdata->type == kint) {
+		printf("int");
+	} else if (matdata->type == kfloat) {
+		printf("float");
+	} else if (matdata->type == kdouble) {
+		printf("double");
+	}
+	printf("]\n");
+	for (uint32_t i = 0; i < rows; i++) {
+		for (uint32_t j = 0; j < cols; j++) {
+			uint32_t offset = compute_offset(matdata->strides, i, j);
+			if (matdata->type == kint) {
+				int *casted_data = (int *)matdata->data;
+				printf("%i", casted_data[offset]);
+			} else if (matdata->type == kfloat) {
+				float *casted_data = (float *)matdata->data;
+				printf("%f", casted_data[offset]);
+			} else if (matdata->type == kdouble) {
+				double *casted_data = (double *)matdata->data;
+				printf("%f", casted_data[offset]);
+			}
+			if (j + 1 < cols) {
+				printf(" ");
+			}
+		}
+		printf("\n");
+	}
 }
 
 void matrix_data_free(matrix_data *matdata) {
-  if (matdata) {
-    free(matdata->data);
-    free(matdata);
-  }
+	if (matdata) {
+		free(matdata->data);
+		free(matdata);
+	}
 }
 
 float matrix_data_get_float(matrix_data *matdata, uint32_t row, uint32_t col) {
-  if (!matdata) {
-    fprintf(stderr, "Invalid pointer to matrix_data.\n");
-    exit(EXIT_FAILURE);
-  }
-  uint32_t offset = compute_offset(matdata->strides, row, col);
-  float *data = (float *)matdata->data;
-  return data[offset];
+	if (!matdata) {
+		fprintf(stderr, "Invalid pointer to matrix_data.\n");
+		exit(EXIT_FAILURE);
+	}
+	uint32_t offset = compute_offset(matdata->strides, row, col);
+	float *data = (float *)matdata->data;
+	return data[offset];
 }
 
 float matrix_data_at_float(matrix_data *matdata, uint32_t index) {
-  if (!matdata) {
-    fprintf(stderr, "Invalid pointer to matrix_data.\n");
-    exit(EXIT_FAILURE);
-  }
-  if (index >= matdata->size) {
-    fprintf(stderr, "Index out of range.\n");
-  }
-  float *data = (float *)matdata->data;
-  return data[index];
+	if (!matdata) {
+		fprintf(stderr, "Invalid pointer to matrix_data.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (index >= matdata->size) {
+		fprintf(stderr, "Index out of range.\n");
+	}
+	float *data = (float *)matdata->data;
+	return data[index];
 }
 
 void matrix_data_set(matrix_data *matdata, uint32_t row, uint32_t col,
                      void *value) {
-  if (!matdata) {
-    fprintf(stderr, "Invalid pointer to matrix_data.\n");
-    exit(EXIT_FAILURE);
-  }
-  uint32_t offset = compute_offset(matdata->strides, row, col);
-  if (offset >= matdata->size) {
-    fprintf(stderr, "Index [row, col] out of range.\n");
-  }
-  if (matdata->type == kint) {
-    int *ptr = (int *)matdata->data;
-    ptr[offset] = *(int *)value;
-  } else if (matdata->type == kfloat) {
-    float *ptr = (float *)matdata->data;
-    ptr[offset] = *(float *)value;
-  } else if (matdata->type == kdouble) {
-    double *ptr = (double *)matdata->data;
-    ptr[offset] = *(double *)value;
-  }
+	if (!matdata) {
+		fprintf(stderr, "Invalid pointer to matrix_data.\n");
+		exit(EXIT_FAILURE);
+	}
+	uint32_t offset = compute_offset(matdata->strides, row, col);
+	if (offset >= matdata->size) {
+		fprintf(stderr, "Index [row, col] out of range.\n");
+	}
+	if (matdata->type == kint) {
+		int *ptr = (int *)matdata->data;
+		ptr[offset] = *(int *)value;
+	} else if (matdata->type == kfloat) {
+		float *ptr = (float *)matdata->data;
+		ptr[offset] = *(float *)value;
+	} else if (matdata->type == kdouble) {
+		double *ptr = (double *)matdata->data;
+		ptr[offset] = *(double *)value;
+	}
 }
 
 void matrix_data_set_at(matrix_data *matdata, uint32_t index, void *value) {
-  if (!matdata) {
-    fprintf(stderr, "Invalid pointer to matrix_data.\n");
-    exit(EXIT_FAILURE);
-  }
-  if (index >= matdata->size) {
-    fprintf(stderr, "Index [row, col] out of range.\n");
-  }
-  if (matdata->type == kint) {
-    int *ptr = (int *)matdata->data;
-    ptr[index] = *(int *)value;
-  } else if (matdata->type == kfloat) {
-    float *ptr = (float *)matdata->data;
-    ptr[index] = *(float *)value;
-  } else if (matdata->type == kdouble) {
-    double *ptr = (double *)matdata->data;
-    ptr[index] = *(double *)value;
-  }
+	if (!matdata) {
+		fprintf(stderr, "Invalid pointer to matrix_data.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (index >= matdata->size) {
+		fprintf(stderr, "Index [row, col] out of range.\n");
+	}
+	if (matdata->type == kint) {
+		int *ptr = (int *)matdata->data;
+		ptr[index] = *(int *)value;
+	} else if (matdata->type == kfloat) {
+		float *ptr = (float *)matdata->data;
+		ptr[index] = *(float *)value;
+	} else if (matdata->type == kdouble) {
+		double *ptr = (double *)matdata->data;
+		ptr[index] = *(double *)value;
+	}
 }
 
 matrix *matrix_make(data_type type, uint32_t shape[2]) {
-  matrix *mat = malloc(sizeof(matrix));
-  if (!mat) {
-    fprintf(stderr, "Error allocating matrix.\n");
-    exit(EXIT_FAILURE);
-  }
-  mat->own_data = true;
-  uint32_t strides[2] = {shape[0] * shape[1], 1};
-  mat->data = matrix_data_make(type, shape, strides);
-  return mat;
+	matrix *mat = malloc(sizeof(matrix));
+	if (!mat) {
+		fprintf(stderr, "Error allocating matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	mat->own_data = true;
+	uint32_t strides[2] = {1, shape[0]};
+	mat->data = matrix_data_make(type, shape, strides);
+	return mat;
 }
 
 void matrix_free(matrix *mat) {
-  if (mat) {
-    matrix_data_free(mat->data);
-    free(mat);
-  }
+	if (mat) {
+		matrix_data_free(mat->data);
+		free(mat);
+	}
 }
 
 void matrix_print(matrix *mat) {
-  if (!mat) {
-    fprintf(stderr, "Error cannot print a NULLL matrix.\n");
-    exit(EXIT_FAILURE);
-  }
-  matrix_data_print(mat->data);
+	if (!mat) {
+		fprintf(stderr, "Error cannot print a NULLL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	matrix_data_print(mat->data);
 }
 
 matrix *matrix_ones(data_type type, uint32_t shape[2]) {
-  matrix *mat = matrix_make(type, shape);
-  if (type == kint) {
-    int value = 1;
-    for (uint32_t i = 0; i < mat->data->size; i++) {
-      matrix_data_set_at(mat->data, i, &value);
-    }
-  } else if (type == kfloat) {
-    float value = 1.;
-    for (uint32_t i = 0; i < mat->data->size; i++) {
-      matrix_data_set_at(mat->data, i, &value);
-    }
-  } else if (type == kdouble) {
-    double value = 1.;
-    for (uint32_t i = 0; i < mat->data->size; i++) {
-      matrix_data_set_at(mat->data, i, &value);
-    }
-  }
-  return mat;
+	matrix *mat = matrix_make(type, shape);
+	if (type == kint) {
+		int value = 1;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	} else if (type == kfloat) {
+		float value = 1.;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	} else if (type == kdouble) {
+		double value = 1.;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	}
+	return mat;
 }
+
+matrix *matrix_zeros(data_type type, uint32_t shape[2]) {
+	matrix *mat = matrix_make(type, shape);
+	if (type == kint) {
+		int value = 0;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	} else if (type == kfloat) {
+		float value = 0.f;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	} else if (type == kdouble) {
+		double value = 0.;
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, &value);
+		}
+	}
+	return mat;
+}
+
+matrix *matrix_fill(data_type type, uint32_t shape[2], void* value) {
+	matrix *mat = matrix_make(type, shape);
+	if (type == kint) {
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, value);
+		}
+	} else if (type == kfloat) {
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, value);
+		}
+	} else if (type == kdouble) {
+		for (uint32_t i = 0; i < mat->data->size; i++) {
+			matrix_data_set_at(mat->data, i, value);
+		}
+	}
+	return mat;
+}
+
+matrix *matrix_arange(data_type type, uint32_t shape[2], void* value) {
+	matrix *mat = matrix_make(type, shape);
+	if (type == kint) {
+		matrix_data_set_at(mat->data, 0, value);
+		for (uint32_t i = 1; i < mat->data->size; i++) {
+			int next_value = ((int*)mat->data->data)[i-1] + 1;
+			matrix_data_set_at(mat->data, i, &next_value);
+		}
+	} else if (type == kfloat) {
+		matrix_data_set_at(mat->data, 0, value);
+		for (uint32_t i = 1; i < mat->data->size; i++) {
+			float next_value = ((float*)mat->data->data)[i-1] + 1.f;
+			matrix_data_set_at(mat->data, i, &next_value);
+		}
+	} else if (type == kdouble) {
+		matrix_data_set_at(mat->data, 0, value);
+		for (uint32_t i = 1; i < mat->data->size; i++) {
+			double next_value = ((double*)mat->data->data)[i-1] + 1.;
+			matrix_data_set_at(mat->data, i, &next_value);
+		}
+	}
+	return mat;
+}
+
+

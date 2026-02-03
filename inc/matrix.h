@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // Data type
@@ -68,7 +67,7 @@ matrix *matrix_zeros(data_type type, uint32_t shape[2]);
 // Create a matrix filled with a single value
 matrix *matrix_fill(data_type, uint32_t shape[2], void *value);
 
-// Create a matrix of lineary spaced sequences
-matrix *matrix_linspace(data_type, uint32_t shape[2], void *value);
+// Create a matrix of a range
+matrix *matrix_arange(data_type, uint32_t shape[2], void *value);
 
 #endif
