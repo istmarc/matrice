@@ -30,7 +30,7 @@ int main() {
 }
 ```
 
-- Matrix initilaized with range
+- Matrix initialized with range
 
 ```c
 #include "matrix.h"
