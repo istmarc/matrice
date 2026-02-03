@@ -42,5 +42,5 @@ int main() {
     matrix_print(mat);
     matrix_free(mat);
 }
-`
+```
 
