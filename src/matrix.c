@@ -18,10 +18,13 @@ matrix_data *matrix_data_make(data_type type, uint32_t shape[2],
 		data = (float *)malloc(size * sizeof(float));
 	} else if (type == kdouble) {
 		data = (double *)malloc(size * sizeof(double));
+	} else {
+		fprintf(stderr, "Error unknown data type.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	if (!data) {
-		fprintf(stderr, "Error unknown data type.\n");
+		fprintf(stderr, "Error allocating data.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -70,6 +73,9 @@ void matrix_data_print(matrix_data *matdata) {
 			} else if (matdata->type == kdouble) {
 				double *casted_data = (double *)matdata->data;
 				printf("%f", casted_data[offset]);
+			} else {
+				fprintf(stderr, "Error unknown data type.\n");
+				exit(EXIT_FAILURE);
 			}
 			if (j + 1 < cols) {
 				printf(" ");
@@ -86,26 +92,59 @@ void matrix_data_free(matrix_data *matdata) {
 	}
 }
 
-float matrix_data_get_float(matrix_data *matdata, uint32_t row, uint32_t col) {
+void matrix_data_get(matrix_data *matdata, uint32_t row, uint32_t col, void* value) {
 	if (!matdata) {
 		fprintf(stderr, "Invalid pointer to matrix_data.\n");
 		exit(EXIT_FAILURE);
 	}
 	uint32_t offset = compute_offset(matdata->strides, row, col);
-	float *data = (float *)matdata->data;
-	return data[offset];
+	if (offset >= matdata->size) {
+		fprintf(stderr, "Index out of range.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (matdata->type == kint) {
+		int* data = (int *)matdata->data;
+		int* value_int = (int*) value;
+		*value_int = data[offset];
+	} else if (matdata->type == kfloat) {
+		float *data = (float *)matdata->data;
+		float* value_float = (float*) value;
+		*value_float = data[offset];
+	} else if (matdata->type == kdouble) {
+		double* data = (double *)matdata->data;
+		double* value_double = (double*) value;
+		*value_double = data[offset];
+	} else {
+		fprintf(stderr, "Unknown data type.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
-float matrix_data_at_float(matrix_data *matdata, uint32_t index) {
+void matrix_data_at(matrix_data *matdata, uint32_t index, void* value) {
 	if (!matdata) {
 		fprintf(stderr, "Invalid pointer to matrix_data.\n");
 		exit(EXIT_FAILURE);
 	}
 	if (index >= matdata->size) {
 		fprintf(stderr, "Index out of range.\n");
+		exit(EXIT_FAILURE);
 	}
-	float *data = (float *)matdata->data;
-	return data[index];
+	if (matdata->type == kint) {
+		int* data = (int *)matdata->data;
+		int* value_int = (int*) value;
+		*value_int = data[index];
+	} else if (matdata->type == kfloat) {
+		float *data = (float *)matdata->data;
+		float* value_float = (float*) value;
+		*value_float = data[index];
+	} else if (matdata->type == kdouble) {
+		double* data = (double *)matdata->data;
+		double* value_double = (double*) value;
+		*value_double = data[index];
+	} else {
+		fprintf(stderr, "Unknown data type.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void matrix_data_set(matrix_data *matdata, uint32_t row, uint32_t col,
@@ -175,6 +214,54 @@ void matrix_print(matrix *mat) {
 		exit(EXIT_FAILURE);
 	}
 	matrix_data_print(mat->data);
+}
+
+uint32_t matrix_rows(matrix* mat) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get rows of a NULLL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	return mat->data->shape[0];
+}
+
+uint32_t matrix_cols(matrix* mat) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get columns of a NULLL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	return mat->data->shape[1];
+}
+
+void matrix_get(matrix* mat, uint32_t row, uint32_t col, void* value) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	matrix_data_get(mat->data, row, col, value);
+}
+
+void matrix_at(matrix* mat, uint32_t index, void* value) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	matrix_data_at(mat->data, index, value);
+}
+
+void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	matrix_data_set(mat->data, row, col, value);
+}
+
+void matrix_set_at(matrix* mat, uint32_t index, void* value) {
+	if (!mat) {
+		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	matrix_data_set_at(mat->data, index, value);
 }
 
 matrix *matrix_ones(data_type type, uint32_t shape[2]) {

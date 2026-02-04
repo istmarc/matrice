@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 // Data type
-typedef enum data_type { kint, kfloat, kdouble } data_type;
+typedef enum data_type { knone, kint, kfloat, kdouble } data_type;
 
 // Handling the matrix dat with type, shape and strides
 typedef struct matrix_data {
@@ -30,11 +30,11 @@ void matrix_data_free(matrix_data *matdata);
 // Compute the linear offset
 uint32_t compute_offset(uint32_t strides[2], uint32_t row, uint32_t col);
 
-// Get the float data at row and colum
-float matrix_data_get_float(matrix_data *matdata, uint32_t row, uint32_t col);
+// Get the value at row and colum
+void matrix_data_get(matrix_data *matdata, uint32_t row, uint32_t col, void* value);
 
-// Get the float data at index
-float matrix_data_at_float(matrix_data *matdata, uint32_t index);
+// Get the value at linear index
+void matrix_data_at(matrix_data *matdata, uint32_t index, void* value);
 
 // Set the matrix at row and column to value
 void matrix_data_set(matrix_data *matdata, uint32_t row, uint32_t col,
@@ -57,6 +57,24 @@ void matrix_free(matrix *mat);
 
 // Print a matrix
 void matrix_print(matrix *mat);
+
+// Get the rows of the matrix
+uint32_t matrix_rows(matrix* mat);
+
+// Get the columns of the matrix
+uint32_t matrix_cols(matrix* mat);
+
+// Get the value at row and column
+void matrix_get(matrix* mat, uint32_t row, uint32_t col, void* value);
+
+// Get the value at the linear index
+void matrix_at(matrix* mat, uint32_t index, void* value);
+
+// Set the matrix at row and column to value
+void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value);
+
+// Set the matrix ar index to value
+void matrix_set_at(matrix* mat, uint32_t index, void* value);
 
 // Create a matrix of ones
 matrix *matrix_ones(data_type type, uint32_t shape[2]);
