@@ -5,9 +5,10 @@ Column major matrix data type in pure C with bindings
 ## Features
 - [x] Basic matrix type for `int`, `float` and `double`
 - [x] Factory functions: `matrix_ones`, `matrix_zeros`, `matrix_fill`  and `matrix_arange`
+- [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
 
 ## Roadmap
-- [] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
+- [] Matrix multiplication
 - [] Matrix view
 - [] Matrix transpose
 - [] Vector type
@@ -32,8 +33,6 @@ Column major matrix data type in pure C with bindings
 | matrix_ones | np.ones | torch.ones | 
 
 ## Examples
-
-Right now only a basic example like the following is working. For more examples see the `tests/` directory.
 
 - Uninitialized matrix
 
@@ -68,24 +67,24 @@ int main() {
 #include "matrix.h"
 
 int main() {
-    uint32_t shape[2] = {3, 3};
-    matrix *mat = matrix_make(kfloat, shape);
-	float x = 1.f;
-	for (uint32_t j = 0; j < matrix_cols(mat); j++) {
-		for (uint32_t i = 0; i < matrix_rows(mat); i++) {
-			matrix_set(mat, i, j, &x);
-			x += 1.f;
-		}
-	}
-	matrix_print(mat);
-	for (uint32_t j = 0; j < matrix_cols(mat); j++) {
-		for (uint32_t i = 0; i < matrix_rows(mat); i++) {
-			float value;
-			matrix_get(mat, i, j, &value);
-			printf("m[%i, %i] = %f\n", i, j, value);
-		}
-	}
-	matrix_free(mat);
+   uint32_t shape[2] = {3, 3};
+   matrix *mat = matrix_make(kfloat, shape);
+   float x = 1.f;
+   for (uint32_t j = 0; j < matrix_cols(mat); j++) {
+      for (uint32_t i = 0; i < matrix_rows(mat); i++) {
+         matrix_set(mat, i, j, &x);
+         x += 1.f;
+      }
+   }
+   matrix_print(mat);
+   for (uint32_t j = 0; j < matrix_cols(mat); j++) {
+      for (uint32_t i = 0; i < matrix_rows(mat); i++) {
+         float value;
+         matrix_get(mat, i, j, &value);
+         printf("m[%i, %i] = %f\n", i, j, value);
+      }
+   }
+   matrix_free(mat);
 }
 ```
 

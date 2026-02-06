@@ -76,6 +76,21 @@ void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value);
 // Set the matrix ar index to value
 void matrix_set_at(matrix* mat, uint32_t index, void* value);
 
+// Add two matrices
+void matrix_add(matrix* x, matrix* y, matrix* z);
+
+// Substract two matrices
+void matrix_sub(matrix* x, matrix* y, matrix* z);
+
+// Elementwise multiply two matrices
+void matrix_mul(matrix* x, matrix* y, matrix* z);
+
+// Divide two matrices
+void matrix_div(matrix* x, matrix* y, matrix* z);
+
+// TODO Matrix multiply two matrices
+void matrix_matmul(matrix* x, matrix* y, matrix* z);
+
 // Create a matrix of ones
 matrix *matrix_ones(data_type type, uint32_t shape[2]);
 

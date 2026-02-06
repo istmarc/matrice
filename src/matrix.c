@@ -264,6 +264,250 @@ void matrix_set_at(matrix* mat, uint32_t index, void* value) {
 	matrix_data_set_at(mat->data, index, value);
 }
 
+void matrix_add(matrix* x, matrix* y, matrix* z) {
+	if (!x) {
+		fprintf(stderr, "Error matrix_add x is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!y) {
+		fprintf(stderr, "Error matrix_add y is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!z) {
+		fprintf(stderr, "Error matrix_add z is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (x->data->type != y->data->type) {
+		fprintf(stderr, "Error matrix_add different types.");
+		exit(EXIT_FAILURE);
+	}
+	if (x->data->type != z->data->type) {
+		fprintf(stderr, "Error matrix_add different output type.");
+		exit(EXIT_FAILURE);
+	}
+
+	if ((x->data->shape[0] != y->data->shape[0]) || (x->data->shape[1] != y->data->shape[1])) {
+		fprintf(stderr, "Error matrix_add different sizes.");
+		exit(EXIT_FAILURE);
+	}
+	if ((x->data->shape[0] != z->data->shape[0]) || (x->data->shape[1] != z->data->shape[1])) {
+		fprintf(stderr, "Error matrix_add different output size.");
+		exit(EXIT_FAILURE);
+	}
+
+	uint32_t size = x->data->size;
+	data_type type = x->data->type;
+	if (type == kint) {
+		int* casted_x = (int*) x->data->data;
+		int* casted_y = (int*) y->data->data;
+		int* casted_z = (int*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] + casted_y[i];
+		}
+	} else if (type == kfloat) {
+		float* casted_x = (float*) x->data->data;
+		float* casted_y = (float*) y->data->data;
+		float* casted_z = (float*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] + casted_y[i];
+		}
+	} else if (type == kdouble) {
+		double* casted_x = (double*) x->data->data;
+		double* casted_y = (double*) y->data->data;
+		double* casted_z = (double*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] + casted_y[i];
+		}
+	}
+}
+
+void matrix_sub(matrix* x, matrix* y, matrix* z) {
+	if (!x) {
+		fprintf(stderr, "Error matrix_sub x is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!y) {
+		fprintf(stderr, "Error matrix_sub y is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!z) {
+		fprintf(stderr, "Error matrix_sub z is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (x->data->type != y->data->type) {
+		fprintf(stderr, "Error matrix_sub different types.");
+		exit(EXIT_FAILURE);
+	}
+	if (x->data->type != z->data->type) {
+		fprintf(stderr, "Error matrix_sub different output type.");
+		exit(EXIT_FAILURE);
+	}
+
+	if ((x->data->shape[0] != y->data->shape[0]) || (x->data->shape[1] != y->data->shape[1])) {
+		fprintf(stderr, "Error matrix_sub different sizes.");
+		exit(EXIT_FAILURE);
+	}
+	if ((x->data->shape[0] != z->data->shape[0]) || (x->data->shape[1] != z->data->shape[1])) {
+		fprintf(stderr, "Error matrix_sub different output size.");
+		exit(EXIT_FAILURE);
+	}
+
+	uint32_t size = x->data->size;
+	data_type type = x->data->type;
+	if (type == kint) {
+		int* casted_x = (int*) x->data->data;
+		int* casted_y = (int*) y->data->data;
+		int* casted_z = (int*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] - casted_y[i];
+		}
+	} else if (type == kfloat) {
+		float* casted_x = (float*) x->data->data;
+		float* casted_y = (float*) y->data->data;
+		float* casted_z = (float*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] - casted_y[i];
+		}
+	} else if (type == kdouble) {
+		double* casted_x = (double*) x->data->data;
+		double* casted_y = (double*) y->data->data;
+		double* casted_z = (double*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] - casted_y[i];
+		}
+	}
+}
+
+void matrix_mul(matrix* x, matrix* y, matrix* z) {
+	if (!x) {
+		fprintf(stderr, "Error matrix_mul x is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!y) {
+		fprintf(stderr, "Error matrix_mul y is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!z) {
+		fprintf(stderr, "Error matrix_mul z is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (x->data->type != y->data->type) {
+		fprintf(stderr, "Error matrix_mul different types.");
+		exit(EXIT_FAILURE);
+	}
+	if (x->data->type != z->data->type) {
+		fprintf(stderr, "Error matrix_mul different output type.");
+		exit(EXIT_FAILURE);
+	}
+
+	if ((x->data->shape[0] != y->data->shape[0]) || (x->data->shape[1] != y->data->shape[1])) {
+		fprintf(stderr, "Error matrix_mul different sizes.");
+		exit(EXIT_FAILURE);
+	}
+	if ((x->data->shape[0] != z->data->shape[0]) || (x->data->shape[1] != z->data->shape[1])) {
+		fprintf(stderr, "Error matrix_mul different output size.");
+		exit(EXIT_FAILURE);
+	}
+
+	uint32_t size = x->data->size;
+	data_type type = x->data->type;
+	if (type == kint) {
+		int* casted_x = (int*) x->data->data;
+		int* casted_y = (int*) y->data->data;
+		int* casted_z = (int*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] * casted_y[i];
+		}
+	} else if (type == kfloat) {
+		float* casted_x = (float*) x->data->data;
+		float* casted_y = (float*) y->data->data;
+		float* casted_z = (float*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] * casted_y[i];
+		}
+	} else if (type == kdouble) {
+		double* casted_x = (double*) x->data->data;
+		double* casted_y = (double*) y->data->data;
+		double* casted_z = (double*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] * casted_y[i];
+		}
+	}
+}
+
+void matrix_div(matrix* x, matrix* y, matrix* z) {
+	if (!x) {
+		fprintf(stderr, "Error matrix_div x is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!y) {
+		fprintf(stderr, "Error matrix_div y is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!z) {
+		fprintf(stderr, "Error matrix_div z is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (x->data->type != y->data->type) {
+		fprintf(stderr, "Error matrix_div different types.");
+		exit(EXIT_FAILURE);
+	}
+	if (x->data->type != z->data->type) {
+		fprintf(stderr, "Error matrix_div different output type.");
+		exit(EXIT_FAILURE);
+	}
+
+	if ((x->data->shape[0] != y->data->shape[0]) || (x->data->shape[1] != y->data->shape[1])) {
+		fprintf(stderr, "Error matrix_div different sizes.");
+		exit(EXIT_FAILURE);
+	}
+	if ((x->data->shape[0] != z->data->shape[0]) || (x->data->shape[1] != z->data->shape[1])) {
+		fprintf(stderr, "Error matrix_div different output size.");
+		exit(EXIT_FAILURE);
+	}
+
+	uint32_t size = x->data->size;
+	data_type type = x->data->type;
+	if (type == kint) {
+		int* casted_x = (int*) x->data->data;
+		int* casted_y = (int*) y->data->data;
+		int* casted_z = (int*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] / casted_y[i];
+		}
+	} else if (type == kfloat) {
+		float* casted_x = (float*) x->data->data;
+		float* casted_y = (float*) y->data->data;
+		float* casted_z = (float*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] / casted_y[i];
+		}
+	} else if (type == kdouble) {
+		double* casted_x = (double*) x->data->data;
+		double* casted_y = (double*) y->data->data;
+		double* casted_z = (double*) z->data->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] / casted_y[i];
+		}
+	}
+}
+
 matrix *matrix_ones(data_type type, uint32_t shape[2]) {
 	matrix *mat = matrix_make(type, shape);
 	if (type == kint) {
