@@ -88,8 +88,11 @@ void matrix_mul(matrix* x, matrix* y, matrix* z);
 // Divide two matrices
 void matrix_div(matrix* x, matrix* y, matrix* z);
 
-// TODO Matrix multiply two matrices
+// Matrix multiply two matrices
 void matrix_matmul(matrix* x, matrix* y, matrix* z);
+
+// Transposed a matrix
+void matrix_transpose(matrix* x, matrix* y);
 
 // Create a matrix of ones
 matrix *matrix_ones(data_type type, uint32_t shape[2]);
@@ -102,5 +105,7 @@ matrix *matrix_fill(data_type, uint32_t shape[2], void *value);
 
 // Create a matrix of a range
 matrix *matrix_arange(data_type, uint32_t shape[2], void *value);
+
+bool matrix_equal(matrix* x, matrix* y, double eps);
 
 #endif
