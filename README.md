@@ -6,9 +6,10 @@ Column major matrix data type in pure C with bindings
 - [x] Basic matrix type for `int`, `float` and `double`
 - [x] Factory functions: `matrix_ones`, `matrix_zeros`, `matrix_fill`  and `matrix_arange`
 - [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
+- [x] Matrix multiplication using auto vectorization
 
 ## Roadmap
-- [] Matrix multiplication
+
 - [] Matrix view
 - [] Matrix transpose
 - [] Vector type
