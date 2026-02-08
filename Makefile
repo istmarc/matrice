@@ -1,7 +1,7 @@
 headers = $(wildcard inc/*.h)
 src = $(wildcard src/*.c)
 blas_library = -lopenblas
-CCFLAGS = -fvectorize -O2 -march=native
+CCFLAGS = -Wall -fvectorize -O2 -march=native
 
 main:
 	$(CC) -include $(headers) -c $(src)
@@ -14,7 +14,8 @@ test:
 
 bench:
 	$(CC) -include $(headers) $(CCFLAGS) -c src/matrix.c -o matrix.o
-	$(CC) matrix.o $(blas_library) -O benchmarks/bench.c -o bench
+	$(CC) matrix.o $(blas_library) -O benchmarks/bench-float.c -o bench-float
+	$(CC) matrix.o $(blas_library) -O benchmarks/bench-double.c -o bench-double
 
 
 

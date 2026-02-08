@@ -204,7 +204,8 @@ matrix *matrix_make(data_type type, uint32_t shape[2]) {
 
 void matrix_free(matrix *mat) {
 	if (mat) {
-		matrix_data_free(mat->data);
+		if (mat->data)
+			matrix_data_free(mat->data);
 		free(mat);
 	}
 }
@@ -564,7 +565,7 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 		// Initialize z to zero
 		#pragma clang loop vectorize(enable)
 		for (uint32_t idx = 0; idx < m*n; idx++) {
-				casted_z[idx] = 0.f;
+				casted_z[idx] = 0;
 		}
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
@@ -608,12 +609,11 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 		matrix* tx = matrix_make(type, tshape);
 		matrix_transpose(x, tx);
 		// Compute x*y in z
-		double* casted_tx = (double*) tx->data->data;
-		double* casted_y = (double*) y->data->data;
+		const double* casted_tx = (const double*) tx->data->data;
+		const double* casted_y = (const double*) y->data->data;
 		double* casted_z = (double*) z->data->data;
 		uint32_t tx_strides_rows = tx->data->strides[0];
 		uint32_t tx_strides_cols = tx->data->strides[1];
-		// Initialize z to zero
 		#pragma clang loop vectorize(enable)
 		for (uint32_t idx = 0; idx < m*n; idx++) {
 				casted_z[idx] = 0.;
@@ -622,7 +622,7 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 			for (uint32_t j = 0; j < n; j++) {
 				#pragma clang loop vectorize(enable)
 				for (uint32_t k = 0; k < p; k++) {
-					casted_z[i*z_strides_rows + j * z_strides_cols]
+					casted_z[i*z_strides_rows + j*z_strides_cols]
 						+= casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
 				}
 			}
@@ -654,28 +654,32 @@ void matrix_transpose(const matrix* x, matrix* y) {
 	data_type type = x->data->type;
 	uint32_t m = x->data->shape[0];
 	uint32_t n = x->data->shape[1];
+	uint32_t x_strides_rows = x->data->strides[0];
+	uint32_t x_strides_cols = x->data->strides[1];
+	uint32_t y_strides_rows = y->data->strides[0];
+	uint32_t y_strides_cols = y->data->strides[1];
 	if (type == kint) {
+		int* casted_x = (int*)x->data->data;
+		int* casted_y = (int*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				int value;
-				matrix_get(x, i, j, &value);
-				matrix_set(y, j, i, &value);
+				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 			}
 		}
 	} else if (type == kfloat) {
+		float* casted_x = (float*)x->data->data;
+		float* casted_y = (float*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				float value;
-				matrix_get(x, i, j, &value);
-				matrix_set(y, j, i, &value);
+				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 			}
 		}
 	} else if (type == kdouble) {
+		double* casted_x = (double*)x->data->data;
+		double* casted_y = (double*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				double value;
-				matrix_get(x, i, j, &value);
-				matrix_set(y, j, i, &value);
+				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 			}
 		}
 	}
