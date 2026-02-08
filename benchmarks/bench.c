@@ -15,7 +15,7 @@ int main() {
 		float start = 1.f;
 		matrix* x = matrix_arange(kfloat, shape, &start);
 		matrix* y = matrix_arange(kfloat, shape, &start);
-		matrix* z = matrix_make(kfloat, shape);
+		matrix* z = matrix_zeros(kfloat, shape);
 		matrix* zblas = matrix_make(kfloat, shape);
 		begin = clock();
 		matrix_matmul(x, y, z);
@@ -30,12 +30,13 @@ int main() {
 		float* casted_y = (float*) y->data->data;
 		float* casted_zblas = (float*) zblas->data->data;
 		begin = clock();
+		int32_t ld = (int32_t)size;
 		cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha,
-			casted_x, size, casted_y, size, beta, casted_zblas, size);
+			casted_x, ld, casted_y, ld, beta, casted_zblas, ld);
 		end = clock();
 		double tblas = (double)(end - begin) / CLOCKS_PER_SEC;
 		printf("%i;%f;%f\n", size, tmatrice, tblas);
-		bool are_equal = matrix_equal(z, zblas, 1e-3);
+		bool are_equal = matrix_are_close(z, zblas, 1e-3);
 		if (!are_equal) {
 			fprintf(stderr, "Different output matrices.\n");
 		}

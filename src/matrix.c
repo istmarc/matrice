@@ -209,7 +209,7 @@ void matrix_free(matrix *mat) {
 	}
 }
 
-void matrix_print(matrix *mat) {
+void matrix_print(const matrix *mat) {
 	if (!mat) {
 		fprintf(stderr, "Error cannot print a NULLL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -217,7 +217,7 @@ void matrix_print(matrix *mat) {
 	matrix_data_print(mat->data);
 }
 
-uint32_t matrix_rows(matrix* mat) {
+uint32_t matrix_rows(const matrix* mat) {
 	if (!mat) {
 		fprintf(stderr, "Error cannot get rows of a NULLL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -225,7 +225,7 @@ uint32_t matrix_rows(matrix* mat) {
 	return mat->data->shape[0];
 }
 
-uint32_t matrix_cols(matrix* mat) {
+uint32_t matrix_cols(const matrix* mat) {
 	if (!mat) {
 		fprintf(stderr, "Error cannot get columns of a NULLL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -233,7 +233,7 @@ uint32_t matrix_cols(matrix* mat) {
 	return mat->data->shape[1];
 }
 
-void matrix_get(matrix* mat, uint32_t row, uint32_t col, void* value) {
+void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value) {
 	if (!mat) {
 		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -241,7 +241,7 @@ void matrix_get(matrix* mat, uint32_t row, uint32_t col, void* value) {
 	matrix_data_get(mat->data, row, col, value);
 }
 
-void matrix_at(matrix* mat, uint32_t index, void* value) {
+void matrix_at(const matrix* mat, uint32_t index, void* value) {
 	if (!mat) {
 		fprintf(stderr, "Error cannot get value from a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -265,7 +265,7 @@ void matrix_set_at(matrix* mat, uint32_t index, void* value) {
 	matrix_data_set_at(mat->data, index, value);
 }
 
-void matrix_add(matrix* x, matrix* y, matrix* z) {
+void matrix_add(const matrix* x, const matrix* y, matrix* z) {
 	if (!x) {
 		fprintf(stderr, "Error matrix_add x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -326,7 +326,7 @@ void matrix_add(matrix* x, matrix* y, matrix* z) {
 	}
 }
 
-void matrix_sub(matrix* x, matrix* y, matrix* z) {
+void matrix_sub(const matrix* x, const matrix* y, matrix* z) {
 	if (!x) {
 		fprintf(stderr, "Error matrix_sub x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -387,7 +387,7 @@ void matrix_sub(matrix* x, matrix* y, matrix* z) {
 	}
 }
 
-void matrix_mul(matrix* x, matrix* y, matrix* z) {
+void matrix_mul(const matrix* x, const matrix* y, matrix* z) {
 	if (!x) {
 		fprintf(stderr, "Error matrix_mul x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -448,7 +448,7 @@ void matrix_mul(matrix* x, matrix* y, matrix* z) {
 	}
 }
 
-void matrix_div(matrix* x, matrix* y, matrix* z) {
+void matrix_div(const matrix* x, const matrix* y, matrix* z) {
 	if (!x) {
 		fprintf(stderr, "Error matrix_div x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -509,7 +509,7 @@ void matrix_div(matrix* x, matrix* y, matrix* z) {
 	}
 }
 
-void matrix_matmul(matrix* x, matrix* y, matrix* z) {
+void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 	if (!x) {
 		fprintf(stderr, "Error matrix multiplication x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -546,6 +546,10 @@ void matrix_matmul(matrix* x, matrix* y, matrix* z) {
 	uint32_t p = x->data->shape[1];
 	uint32_t n = y->data->shape[1];
 	data_type type = x->data->type;
+	uint32_t y_strides_rows = y->data->strides[0];
+	uint32_t y_strides_cols = y->data->strides[1];
+	uint32_t z_strides_rows = z->data->strides[0];
+	uint32_t z_strides_cols = z->data->strides[1];
 	if (type == kint) {
 		// Transpose x
 		uint32_t tshape[2] = {p, m};
@@ -557,18 +561,18 @@ void matrix_matmul(matrix* x, matrix* y, matrix* z) {
 		int* casted_z = (int*) z->data->data;
 		uint32_t tx_strides_rows = tx->data->strides[0];
 		uint32_t tx_strides_cols = tx->data->strides[1];
-		uint32_t y_strides_rows = y->data->strides[0];
-		uint32_t y_strides_cols = y->data->strides[1];
-		uint32_t z_strides_rows = z->data->strides[0];
-		uint32_t z_strides_cols = z->data->strides[1];
+		// Initialize z to zero
+		#pragma clang loop vectorize(enable)
+		for (uint32_t idx = 0; idx < m*n; idx++) {
+				casted_z[idx] = 0.f;
+		}
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				int sum = 0;
 				#pragma clang loop vectorize(enable)
 				for (uint32_t k = 0; k < p; k++) {
-					sum += casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
+					casted_z[i*z_strides_rows + j*z_strides_cols]
+						+= casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
 				}
-				casted_z[i*z_strides_rows + j * z_strides_cols] = sum;
 			}
 		}
 		matrix_free(tx);
@@ -583,18 +587,18 @@ void matrix_matmul(matrix* x, matrix* y, matrix* z) {
 		float* casted_z = (float*) z->data->data;
 		uint32_t tx_strides_rows = tx->data->strides[0];
 		uint32_t tx_strides_cols = tx->data->strides[1];
-		uint32_t y_strides_rows = y->data->strides[0];
-		uint32_t y_strides_cols = y->data->strides[1];
-		uint32_t z_strides_rows = z->data->strides[0];
-		uint32_t z_strides_cols = z->data->strides[1];
+		// Initialize z to zero
+		#pragma clang loop vectorize(enable)
+		for (uint32_t idx = 0; idx < m*n; idx++) {
+				casted_z[idx] = 0.f;
+		}
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				float sum = 0.f;
 				#pragma clang loop vectorize(enable)
 				for (uint32_t k = 0; k < p; k++) {
-					sum += casted_tx[k*tx_strides_rows + i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
+					casted_z[i*z_strides_rows + j*z_strides_cols] 
+						+= casted_tx[k*tx_strides_rows + i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
 				}
-				casted_z[i*z_strides_rows + j*z_strides_cols] = sum;
 			}
 		}
 		matrix_free(tx);
@@ -609,26 +613,28 @@ void matrix_matmul(matrix* x, matrix* y, matrix* z) {
 		double* casted_z = (double*) z->data->data;
 		uint32_t tx_strides_rows = tx->data->strides[0];
 		uint32_t tx_strides_cols = tx->data->strides[1];
-		uint32_t y_strides_rows = y->data->strides[0];
-		uint32_t y_strides_cols = y->data->strides[1];
-		uint32_t z_strides_rows = z->data->strides[0];
-		uint32_t z_strides_cols = z->data->strides[1];
+		// Initialize z to zero
+		#pragma clang loop vectorize(enable)
+		for (uint32_t idx = 0; idx < m*n; idx++) {
+				casted_z[idx] = 0.;
+		}
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				double sum = 0.;
 				#pragma clang loop vectorize(enable)
 				for (uint32_t k = 0; k < p; k++) {
-					sum += casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
+					casted_z[i*z_strides_rows + j * z_strides_cols]
+						+= casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
 				}
-				casted_z[i*z_strides_rows + j * z_strides_cols] = sum;
 			}
 		}
 		matrix_free(tx);
-
+	} else {
+		fprintf(stderr, "Matrix multiplication unknown data type.\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
-void matrix_transpose(matrix* x, matrix* y) {
+void matrix_transpose(const matrix* x, matrix* y) {
 	if (!x) {
 		fprintf(stderr, "Matrix transpose, x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -648,35 +654,25 @@ void matrix_transpose(matrix* x, matrix* y) {
 	data_type type = x->data->type;
 	uint32_t m = x->data->shape[0];
 	uint32_t n = x->data->shape[1];
-	uint32_t x_strides_rows = x->data->strides[0];
-	uint32_t x_strides_cols = x->data->strides[1];
-	uint32_t y_strides_rows = y->data->strides[0];
-	uint32_t y_strides_cols = y->data->strides[1];
 	if (type == kint) {
-		int* casted_x = (int*)x->data->data;
-		int* casted_y = (int*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
+				int value;
+				matrix_get(x, i, j, &value);
+				matrix_set(y, j, i, &value);
 			}
 		}
 	} else if (type == kfloat) {
-		//float* casted_x = (float*)x->data->data;
-		//float* casted_y = (float*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				//casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 				float value;
 				matrix_get(x, i, j, &value);
 				matrix_set(y, j, i, &value);
 			}
 		}
 	} else if (type == kdouble) {
-		double* casted_x = (double*)x->data->data;
-		double* casted_y = (double*)y->data->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
-				//casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 				double value;
 				matrix_get(x, i, j, &value);
 				matrix_set(y, j, i, &value);
@@ -769,7 +765,7 @@ matrix *matrix_arange(data_type type, uint32_t shape[2], void* value) {
 	return mat;
 }
 
-bool matrix_equal(matrix* x, matrix *y, double eps) {
+bool matrix_are_close(const matrix* x, const matrix *y, double eps) {
 	if (!x) {
 		fprintf(stderr, "Error x is a NULL matrix.\n");
 		exit(EXIT_FAILURE);
@@ -822,3 +818,24 @@ bool matrix_equal(matrix* x, matrix *y, double eps) {
 	}
 	return ret;
 }
+
+bool matrix_equal(const matrix* x, const matrix *y) {
+	if (!x) {
+		fprintf(stderr, "Error x is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!y) {
+		fprintf(stderr, "Error y is a NULL matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (x->data->type != y->data->type) {
+		fprintf(stderr, "Error different types.");
+		exit(EXIT_FAILURE);
+	}
+	if ((x->data->shape[0] != y->data->shape[0]) || (x->data->shape[1] != y->data->shape[1])) {
+		fprintf(stderr, "Eror different shapes.\n");
+		return false;
+	}
+	return x->data == y->data;
+}
+

@@ -56,43 +56,43 @@ matrix *matrix_make(data_type type, uint32_t shape[2]);
 void matrix_free(matrix *mat);
 
 // Print a matrix
-void matrix_print(matrix *mat);
+void matrix_print(const matrix *mat);
 
 // Get the rows of the matrix
-uint32_t matrix_rows(matrix* mat);
+uint32_t matrix_rows(const matrix* mat);
 
 // Get the columns of the matrix
-uint32_t matrix_cols(matrix* mat);
+uint32_t matrix_cols(const matrix* mat);
 
 // Get the value at row and column
-void matrix_get(matrix* mat, uint32_t row, uint32_t col, void* value);
+void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value);
 
 // Get the value at the linear index
-void matrix_at(matrix* mat, uint32_t index, void* value);
+void matrix_at(const matrix* mat, uint32_t index, void* value);
 
 // Set the matrix at row and column to value
 void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value);
 
-// Set the matrix ar index to value
+// Set the matrix at index to value
 void matrix_set_at(matrix* mat, uint32_t index, void* value);
 
 // Add two matrices
-void matrix_add(matrix* x, matrix* y, matrix* z);
+void matrix_add(const matrix* x, const matrix* y, matrix* z);
 
 // Substract two matrices
-void matrix_sub(matrix* x, matrix* y, matrix* z);
+void matrix_sub(const matrix* x, const matrix* y, matrix* z);
 
 // Elementwise multiply two matrices
-void matrix_mul(matrix* x, matrix* y, matrix* z);
+void matrix_mul(const matrix* x, const matrix* y, matrix* z);
 
 // Divide two matrices
-void matrix_div(matrix* x, matrix* y, matrix* z);
+void matrix_div(const matrix* x, const matrix* y, matrix* z);
 
 // Matrix multiply two matrices
-void matrix_matmul(matrix* x, matrix* y, matrix* z);
+void matrix_matmul(const matrix* x, const matrix* y, matrix* z);
 
 // Transposed a matrix
-void matrix_transpose(matrix* x, matrix* y);
+void matrix_transpose(const matrix* x, matrix* y);
 
 // Create a matrix of ones
 matrix *matrix_ones(data_type type, uint32_t shape[2]);
@@ -106,6 +106,10 @@ matrix *matrix_fill(data_type, uint32_t shape[2], void *value);
 // Create a matrix of a range
 matrix *matrix_arange(data_type, uint32_t shape[2], void *value);
 
-bool matrix_equal(matrix* x, matrix* y, double eps);
+// Test if two matrices are equal
+bool matrix_are_close(const matrix* x, const matrix* y, double eps);
+
+// Test if two matrices are equal
+bool matrix_equal(const matrix* x, const matrix* y);
 
 #endif
