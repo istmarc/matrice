@@ -32,7 +32,7 @@ Column major matrix data type in pure C with bindings
 |---------|-------|--------|-----------|
 | `matrix_make(type, shape)`;`vector_make(type, size)` | np.empty | torch.empty |  |
 | `matrix_zeros(type, shape)`;`vector_zeros(type, size)` | np.zeros | torch.zeros | |
-| `matrix_ones(type, shape)`;`vector_zeros(type, size)`| np.ones | torch.ones | 
+| `matrix_ones(type, shape)`;`vector_ones(type, size)`| np.ones | torch.ones | 
 
 ## Examples
 
