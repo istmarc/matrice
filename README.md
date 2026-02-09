@@ -105,7 +105,31 @@ int main() {
 }
 ```
 
-## Bindings
+## C++ Bindings
+
+In C++, the classes `matrice::vector` and `matrice::matrix` are defined.
+
+A basic example is the following:
+
+```cpp
+#include <matrice/matrice.hxx>
+
+int main() {
+    using namespace matrice;
+    matrix x = arange(data_type::kfloat, 4, 4, 1.0f);
+    matrix y = arange(data_type::kfloat, 4, 4, 1.0f);
+    auto z = matmul(x, y);
+    std::cout << "shape = " << z.rows() << "x" << z.cols() << std::endl;
+    std::cout << "size = " << z.size() << std::endl;
+    std::cout << z;
+    // Access indices with at
+    std::cout << z.at<float>(0) << std::endl;
+    // Modify a value
+    z.mutable_data()[0] = 1.0f;
+    // Access indices with the pointer to the data
+    std::cout << z.data()[0] << std::endl;
+}
+```
 
 
 
