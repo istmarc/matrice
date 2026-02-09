@@ -55,9 +55,6 @@ void vector_mul(const vector* x, const vector* y, vector* z);
 // Divide two vectors
 void vector_div(const vector* x, const vector* y, vector* z);
 
-// vector multiply two vectors
-void vector_matmul(const vector* x, const vector* y, vector* z);
-
 // Create a vector of ones
 vector *vector_ones(data_type type, uint32_t size);
 
