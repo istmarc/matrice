@@ -22,17 +22,17 @@ Column major matrix data type in pure C with bindings
 
 | matrice | numpy | pytorch | Eigen |
 |---------|-------|--------|-----------|
-| int     | np.int | torch.int32; torch.int | int |
-| float   | np.float32 | torch.float32; torch.float | float |
-| double | np.float64 | torch.float64 | double
+| `int`     | np.int | torch.int32; torch.int | int |
+| `float`   | np.float32 | torch.float32; torch.float | float |
+| `double` | np.float64 | torch.float64 | double
 
 - Empty, ones and zeros
 
 | matrice | numpy | pytorch | Eigen |
 |---------|-------|--------|-----------|
-| matrix_make     | np.empty | torch.empty |  |
-| matrix_zeros   | np.zeros | torch.zeros | |
-| matrix_ones | np.ones | torch.ones | 
+| `matrix_make(type, shape)`;`vector_make(type, size)` | np.empty | torch.empty |  |
+| `matrix_zeros(type, shape)`;`vector_zeros(type, size)` | np.zeros | torch.zeros | |
+| `matrix_ones(type, shape)`;`vector_zeros(type, size)`| np.ones | torch.ones | 
 
 ## Examples
 
