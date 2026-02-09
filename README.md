@@ -7,13 +7,14 @@ Column major matrix data type in pure C with bindings
 - [x] Factory functions: `matrix_ones`, `matrix_zeros`, `matrix_fill`  and `matrix_arange`
 - [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
 - [x] Matrix multiplication using auto vectorization
+- [x] Fixed size Vector type
 
 ## Roadmap
-
 - [] Matrix view
 - [] Matrix transpose
-- [] Vector type
-- [] Bindings
+- [] Bindings for OCaml
+- [] Bindings C++ with classes.
+- [] Bindings for Python.
 
 ## Data types and operations
 
@@ -62,7 +63,7 @@ int main() {
 }
 ```
 
-- Examples of using `matrix_set` and `matrix_get`
+- Example of using `matrix_set` and `matrix_get`
 
 ```c
 #include "matrix.h"
@@ -88,23 +89,4 @@ int main() {
    matrix_free(mat);
 }
 ```
-
-This should print:
-
-```shell
-matrix[float]
-1.000000 4.000000 7.000000
-2.000000 5.000000 8.000000
-3.000000 6.000000 9.000000
-m[0, 0] = 1.000000
-m[1, 0] = 2.000000
-m[2, 0] = 3.000000
-m[0, 1] = 4.000000
-m[1, 1] = 5.000000
-m[2, 1] = 6.000000
-m[0, 2] = 7.000000
-m[1, 2] = 8.000000
-m[2, 2] = 9.000000
-```
-
 
