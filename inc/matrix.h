@@ -3,9 +3,18 @@
 
 #include "data_type.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
+#ifdef __cplusplus
+   #include <cstdlib>
+   #include <cstdint>
+#else
+   #include <stdbool.h>
+   #include <stdint.h>
+   #include <stdlib.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Compute the linear offset
 uint32_t compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col);
@@ -82,5 +91,9 @@ bool matrix_are_close(const matrix* x, const matrix* y, double eps);
 
 // Test if two matrices are equal
 bool matrix_equal(const matrix* x, const matrix* y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

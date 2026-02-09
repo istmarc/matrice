@@ -3,9 +3,18 @@
 
 #include "data_type.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
+#ifdef __cplusplus
+   #include <cstdint>
+   #include <cstdlib>
+#else
+   #include <stdbool.h>
+   #include <stdint.h>
+   #include <stdlib.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Vector data type
 typedef struct vector {
@@ -66,5 +75,9 @@ bool vector_are_close(const vector* x, const vector* y, double eps);
 
 // Test if two vectors are equal
 bool vector_equal(const vector* x, const vector* y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
