@@ -33,6 +33,10 @@ install:
 	mkdir -p $(INSTALL_DIR)/include/matrice
 	cp inc/*.h $(INSTALL_DIR)/include/matrice
 
+install-cpp:
+	mkdir -p $(INSTALL_DIR)/include/matrice
+	cp bindings/cpp/matrice.hxx $(INSTALL_DIR)/include/matrice
+
 clean:
 	rm -f *.o
 	rm -f *.so

@@ -7,13 +7,13 @@ Column major matrix data type in pure C with bindings
 - [x] Factory functions: `matrix_ones`, `matrix_zeros`, `matrix_fill`  and `matrix_arange`
 - [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
 - [x] Matrix multiplication using auto vectorization
-- [x] Fixed size Vector type
+- [x] Fixed size vector type
+- [x] Bindings C++ with classes.
 
 ## Roadmap
 - [] Matrix view
 - [] Matrix transpose
 - [] Bindings for OCaml
-- [] Bindings C++ with classes.
 - [] Bindings for Python.
 
 ## Data types and operations
@@ -33,6 +33,21 @@ Column major matrix data type in pure C with bindings
 | `matrix_make(type, shape)`;`vector_make(type, size)` | np.empty | torch.empty |  |
 | `matrix_zeros(type, shape)`;`vector_zeros(type, size)` | np.zeros | torch.zeros | |
 | `matrix_ones(type, shape)`;`vector_ones(type, size)`| np.ones | torch.ones | 
+
+## Build and install
+
+The following command will build and install the C shared library and header files.
+
+```shell
+make main
+make install
+```
+
+The C++ bindings can be installed by running
+
+```shell
+make install-cpp
+```
 
 ## Examples
 
@@ -89,4 +104,8 @@ int main() {
    matrix_free(mat);
 }
 ```
+
+## Bindings
+
+
 
