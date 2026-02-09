@@ -2,25 +2,33 @@ headers = $(wildcard inc/*.h)
 src = $(wildcard src/*.c)
 objs = matrix.o vector.o
 blas_library = -lopenblas
-CCFLAGS = -Wall -fvectorize -fPIC -O2 -march=native
+CFLAGS ?= -Wall -fvectorize -fPIC -O2 -march=native
+INSTALL_DIR ?= /usr/local
 
 main:
 	$(CC) -include $(headers) $(CCFLAGS) -c $(src)
-	$(CC) -shared -o matrice.so $(objs)
+	$(CC) -shared -o libmatrice.so $(objs)
 
 test:
 	$(CC) -include $(headers) $(CCFLAGS) -c $(src)
-	$(CC) -shared -o matrice.so $(objs)
+	$(CC) -shared -o libmatrice.so $(objs)
 	$(CC) $(objs) -O tests/test_allocations.c -o test_allocations
 	$(CC) $(objs) -O tests/test_basics.c -o test_basics
 	$(CC) $(objs) -O tests/test_ops.c -o test_ops
-	$(CC) tests/test_shared.c -o test_shared matrice.so
+	$(CC) tests/test_shared.c -o test_shared libmatrice.so
 
 bench:
 	$(CC) -include $(headers) $(CCFLAGS) -c src/matrix.c -o matrix.o
 	$(CC) -include $(headers) $(CCFLAGS) -c src/matrix.c -o matrix.o
 	$(CC) matrix.o $(blas_library) -O benchmarks/bench-float.c -o bench-float
 	$(CC) matrix.o $(blas_library) -O benchmarks/bench-double.c -o bench-double
+
+install:
+	@echo Installing libmatrice.so
+	cp libmatrice.so $(INSTALL_DIR)/lib
+	@echo Installing header files
+	mkdir -p $(INSTALL_DIR)/include/matrice
+	cp inc/*.h $(INSTALL_DIR)/include/matrice
 
 clean:
 	rm *.o
