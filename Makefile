@@ -32,6 +32,9 @@ install:
 	@echo Installing header files
 	mkdir -p $(INSTALL_DIR)/include/matrice
 	cp inc/*.h $(INSTALL_DIR)/include/matrice
+	@echo Installing config files
+	mkdir -p $(INSTALL_DIR)/lib/pkgconfig
+	cp matrice.pc $(INSTALL_DIR)/lib/pkgconfig
 
 install-cpp:
 	mkdir -p $(INSTALL_DIR)/include/matrice

@@ -1,0 +1,10 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: matrice
+Description: C matrix and fixed size vector library
+Version: 1.0.0
+Cflags: -I${includedir}/matrice
+Libs: -L${libdir} -lmatrice
