@@ -1,0 +1,20 @@
+(library
+ (public_name matrice)
+ (name matrice)
+(libraries core)
+ ; ctypes backward compatibility shims warn sometimes; suppress them
+ (flags (:standard -w -9-27))
+ (ctypes
+  (external_library_name matrice)
+  (build_flags_resolver pkg_config)
+  (headers
+     (include "matrice/data_type.h" "matrice/matrix.h" "matrice/vector.h"))
+  (type_description
+   (instance Types)
+   (functor Type_description))
+  (function_description
+   (concurrency unlocked)
+   (instance Functions)
+   (functor Function_description))
+  (generated_types Types_generated)
+  (generated_entry_point C)))
