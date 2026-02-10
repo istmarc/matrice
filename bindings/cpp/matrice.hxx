@@ -2,6 +2,7 @@
 #define MATRICE_HXX
 
 #include <cstdint>
+#include <initializer_list>
 #include <iostream>
 #include <stdexcept>
 
@@ -18,19 +19,88 @@ using data_type = matrice_c::data_type;
 // Bindings for vector data type
 class vector {
  private:
+   bool own_vec = true;
    matrice_c::vector *vec = nullptr;
 
  public:
    // Construct a vector from type and size
-   vector(data_type type, uint32_t size) {
+   vector(data_type type, uint32_t size) : own_vec(true) {
       vec = matrice_c::vector_make(type, size);
    }
 
-   vector(matrice_c::vector *ptr) : vec(ptr) {}
+   vector(matrice_c::vector *ptr) : own_vec(true), vec(ptr) {}
+
+   // Constructor from an initializer_list of int
+   vector(std::initializer_list<int> values) : own_vec(true) {
+      uint32_t size = values.size();
+      vec = matrice_c::vector_make(data_type::kint, size);
+      int *data = (int *)vec->data;
+      for (uint32_t i = 0; i < size; i++) {
+         data[i] = *(values.begin() + i);
+      }
+   }
+
+   // Constructor from an initializer_list of float
+   vector(std::initializer_list<float> values) : own_vec(true) {
+      uint32_t size = values.size();
+      vec = matrice_c::vector_make(data_type::kfloat, size);
+      float *data = (float *)vec->data;
+      for (uint32_t i = 0; i < size; i++) {
+         data[i] = *(values.begin() + i);
+      }
+   }
+
+   // Constructor from an initializer_list of double
+   vector(std::initializer_list<double> values) : own_vec(true) {
+      uint32_t size = values.size();
+      vec = matrice_c::vector_make(data_type::kdouble, size);
+      double *data = (double *)vec->data;
+      for (uint32_t i = 0; i < size; i++) {
+         data[i] = *(values.begin() + i);
+      }
+   }
 
    ~vector() {
-      if (vec)
+      if (own_vec && vec)
          matrice_c::vector_free(vec);
+   }
+
+   // Copy constructor
+   vector(const vector &v) {
+      if (own_vec && vec) {
+         matrice_c::vector_free(vec);
+      }
+      own_vec = false;
+      vec = v.vec;
+   }
+
+   // Move constructor
+   vector(vector &&v) {
+      if (own_vec && vec) {
+         matrice_c::vector_free(vec);
+      }
+      own_vec = std::move(v.own_vec);
+      vec = std::move(v.vec);
+   }
+
+   // = oprator
+   vector &operator=(const vector &v) {
+      if (own_vec && vec) {
+         matrice_c::vector_free(vec);
+      }
+      own_vec = false;
+      vec = v.vec;
+      return *this;
+   }
+
+   // = operator
+   vector &operator=(vector &&v) {
+      if (own_vec && vec) {
+         matrice_c::vector_free(vec);
+      }
+      own_vec = std::move(v.own_vec);
+      vec = std::move(v.vec);
+      return *this;
    }
 
    // Get the type
@@ -140,24 +210,97 @@ vector arange(uint32_t size, double value = 0.) {
 // Binding for matrix type
 class matrix {
  private:
+   bool own_mat = true;
    matrice_c::matrix *mat = nullptr;
 
  public:
    // Create a matrix from type, rows and columns
-   matrix(data_type type, uint32_t rows, uint32_t cols) {
+   matrix(data_type type, uint32_t rows, uint32_t cols) : own_mat(true) {
       uint32_t shape[2] = {rows, cols};
       mat = matrice_c::matrix_make(type, shape);
    }
 
    // Create a matrix from type and shape
-   matrix(data_type type, uint32_t shape[2]) {
+   matrix(data_type type, uint32_t shape[2]) : own_mat(true) {
       mat = matrice_c::matrix_make(type, shape);
    }
 
-   matrix(matrice_c::matrix *ptr) {
-      if (mat)
+   matrix(matrice_c::matrix *ptr) : own_mat(true) {
+      if (own_mat && mat)
          matrice_c::matrix_free(mat);
       mat = ptr;
+   }
+
+   // Constructor from an initializer_list<initializer_list> of int
+   // The list are interpreted as the columns of the matrix
+   matrix(std::initializer_list<std::initializer_list<int>> values)
+       : own_mat(true) {
+      uint32_t cols = values.size();
+      uint32_t rows = values.begin()->size();
+      for (uint32_t i = 1; i < cols; i++) {
+         auto iter = values.begin() + i;
+         if (iter->size() != rows) {
+            throw std::runtime_error("Invalid matrix row size.\n");
+         }
+      }
+      uint32_t shape[2] = {rows, cols};
+      mat = matrice_c::matrix_make(data_type::kint, shape);
+      int *data = (int *)mat->data;
+      for (uint32_t j = 0; j < cols; j++) {
+         for (uint32_t i = 0; i < rows; i++) {
+            auto iter_col = values.begin() + j;
+            auto iter_row = (*iter_col).begin() + i;
+            data[i * mat->strides[0] + j * mat->strides[1]] = *iter_row;
+         }
+      }
+   }
+
+   // Constructor from an initializer_list<initializer_list> of float
+   // The list are interpreted as the columns of the matrix
+   matrix(std::initializer_list<std::initializer_list<float>> values)
+       : own_mat(true) {
+      uint32_t cols = values.size();
+      uint32_t rows = values.begin()->size();
+      for (uint32_t i = 1; i < cols; i++) {
+         auto iter = values.begin() + i;
+         if (iter->size() != rows) {
+            throw std::runtime_error("Invalid matrix row size.\n");
+         }
+      }
+      uint32_t shape[2] = {rows, cols};
+      mat = matrice_c::matrix_make(data_type::kfloat, shape);
+      float *data = (float *)mat->data;
+      for (uint32_t j = 0; j < cols; j++) {
+         for (uint32_t i = 0; i < rows; i++) {
+            auto iter_col = values.begin() + j;
+            auto iter_row = (*iter_col).begin() + i;
+            data[i * mat->strides[0] + j * mat->strides[1]] = *iter_row;
+         }
+      }
+   }
+
+   // Constructor from an initializer_list<initializer_list> of double
+   // The list are interpreted as the columns of the matrix
+   matrix(std::initializer_list<std::initializer_list<double>> values)
+       : own_mat(true) {
+      uint32_t cols = values.size();
+      uint32_t rows = values.begin()->size();
+      for (uint32_t i = 1; i < cols; i++) {
+         auto iter = values.begin() + i;
+         if (iter->size() != rows) {
+            throw std::runtime_error("Invalid matrix row size.\n");
+         }
+      }
+      uint32_t shape[2] = {rows, cols};
+      mat = matrice_c::matrix_make(data_type::kdouble, shape);
+      double *data = (double *)mat->data;
+      for (uint32_t j = 0; j < cols; j++) {
+         for (uint32_t i = 0; i < rows; i++) {
+            auto iter_col = values.begin() + j;
+            auto iter_row = (*iter_col).begin() + i;
+            data[i * mat->strides[0] + j * mat->strides[1]] = *iter_row;
+         }
+      }
    }
 
    // Get the pointer to the matrix
@@ -179,9 +322,47 @@ class matrix {
    uint32_t cols() const { return mat->shape[1]; }
 
    ~matrix() {
-      if (mat) {
+      if (own_mat && mat) {
          matrice_c::matrix_free(mat);
       }
+   }
+
+   // Copy constructor
+   matrix(const matrix &m) {
+      if (own_mat && mat) {
+         matrice_c::matrix_free(mat);
+      }
+      own_mat = false;
+      mat = m.mat;
+   }
+
+   // Move constructor
+   matrix(matrix &&m) {
+      if (own_mat && mat) {
+         matrice_c::matrix_free(mat);
+      }
+      own_mat = std::move(m.own_mat);
+      mat = std::move(m.mat);
+   }
+
+   // = operator
+   matrix &operator=(const matrix &m) {
+      if (own_mat && mat) {
+         matrice_c::matrix_free(mat);
+      }
+      own_mat = false;
+      mat = m.mat;
+      return *this;
+   }
+
+   // = operator
+   matrix &operator=(matrix &&m) {
+      if (own_mat && mat) {
+         matrice_c::matrix_free(mat);
+      }
+      own_mat = std::move(m.own_mat);
+      mat = std::move(m.mat);
+      return *this;
    }
 
    // Get the pointer to the data casted to a type T

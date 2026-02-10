@@ -26,5 +26,14 @@ int main() {
       std::cout << z;
    }
 
+   {
+      vector x({1.0f, 2.0f, 3.0f});
+      std::cout << x;
+   }
+
+   {
+      matrix x({{1.0f, 2.0f}, {3.0f, 4.0f}, {5.0f, 6.0f}});
+      std::cout << x;
+   }
 }
 
