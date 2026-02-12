@@ -14,6 +14,8 @@ open F
 
    let vector_ptr_size = foreign "vector_size" (Types.vector_ptr @-> returning uint32_t)
 
+   let vector_ptr_type = foreign "vector_type" (Types.vector_ptr @-> returning uint32_t)
+
    let vector_ptr_at = foreign "vector_at" (Types.vector_ptr @-> uint32_t @-> Types.void_ptr @-> returning void)
 
    let vector_ptr_set = foreign "vector_set" (Types.vector_ptr @-> uint32_t @-> Types.void_ptr @-> returning void)
@@ -49,13 +51,15 @@ open F
 
    let matrix_ptr_cols = foreign "matrix_cols" (Types.matrix_ptr @-> returning uint32_t)
 
+   let matrix_ptr_type = foreign "matrix_type" (Types.matrix_ptr @-> returning uint32_t)
+
    let matrix_ptr_get = foreign "matrix_get" (Types.matrix_ptr @-> uint32_t @-> uint32_t @-> Types.void_ptr @-> returning void)
 
    let matrix_ptr_at = foreign "matrix_at" (Types.matrix_ptr @-> uint32_t @-> Types.void_ptr @-> returning void)
 
    let matrix_ptr_set = foreign "matrix_set" (Types.matrix_ptr @-> uint32_t @-> uint32_t @-> Types.void_ptr @-> returning void)
 
-   let matrix_ptr_set = foreign "matrix_set_at" (Types.matrix_ptr @-> uint32_t @-> Types.void_ptr @-> returning void)
+   let matrix_ptr_set_at = foreign "matrix_set_at" (Types.matrix_ptr @-> uint32_t @-> Types.void_ptr @-> returning void)
 
    let matrix_ptr_add = foreign "matrix_add" (Types.matrix_ptr @-> Types.matrix_ptr @-> Types.matrix_ptr @-> returning void)
 

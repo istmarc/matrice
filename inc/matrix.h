@@ -44,6 +44,9 @@ uint32_t matrix_rows(const matrix* mat);
 // Get the columns of the matrix
 uint32_t matrix_cols(const matrix* mat);
 
+// Get the type of the matrix
+data_type matrix_type(const matrix* mat);
+
 // Get the value at row and column
 void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value);
 

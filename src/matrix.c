@@ -126,6 +126,15 @@ uint32_t matrix_cols(const matrix* mat) {
 	return mat->shape[1];
 }
 
+data_type matrix_type(const matrix* mat) {
+	if (!is_valid_matrix_pointer(mat)) {
+		fprintf(stderr, "Error cannot get type of an invalid matrix pointer.\n");
+		exit(EXIT_FAILURE);
+	}
+	return mat->type;
+}
+
+
 void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value) {
 	if (!is_valid_matrix_pointer(mat)) {
 		fprintf(stderr, "Error cannot get value from an ivalid matrix pointer.\n");
