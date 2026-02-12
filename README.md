@@ -8,12 +8,12 @@ Column major matrix data type in pure C with bindings
 - [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
 - [x] Matrix multiplication using auto vectorization
 - [x] Fixed size vector type
-- [x] Bindings C++ with classes.
+- [x] Bindings for C++ with classes.
+- [x] Bindings for OCaml
 
 ## Roadmap
 - [] Matrix view
 - [] Matrix transpose
-- [] Bindings for OCaml
 - [] Bindings for Python.
 
 ## Data types and operations
@@ -47,6 +47,14 @@ The C++ bindings can be installed by running
 
 ```shell
 make install-cpp
+```
+
+The OCaml bindings can be installed by typing
+
+```shell
+cd bindings/ocaml/matrice
+dune build
+dune install
 ```
 
 ## Examples
@@ -131,5 +139,32 @@ int main() {
 }
 ```
 
+## OCaml Bindins
 
+In OCaml, two records `Vector.vector` and `Matrix.matrix` are define.
+
+An working example is the following:
+
+```ocaml
+open Matrice
+
+(*Create an initialized matrix of float*)
+let rows = 3;;
+let cols = 4;;
+let a = Matrix.make Float32 rows cols;;
+Matrix.print_endline a;;
+
+(*Create an initialized vector of int*)
+let b = Vector.make Int32 10;;
+(*Set the values*)
+for i = 0 to 9 do
+    Vector.set_int32 b (Int32.of_int i)
+done
+Vector.print_endline b;;
+
+(*Matrix multiplication*)
+let x = Matrix.arange_float 4 4 1.0;;
+let y = Matrix.arange_float 4 4 1.0;;
+Matrix.print_endline matmul x y;;
+```
 
