@@ -4,10 +4,10 @@ module Types (F: Ctypes.TYPE) = struct
    open F
 
    (*enum data_type*)
+   let knone = constant "knone" uint32_t
    let kint = constant "kint" uint32_t
    let kfloat = constant "kfloat" uint32_t
    let kdouble = constant "kdouble" uint32_t
-   let knone = constant "knone" uint32_t
 
    (*struct vector*)
    type vector_ptr = unit ptr
