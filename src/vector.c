@@ -95,6 +95,14 @@ void vector_print(const vector *vec) {
 	printf("]\n");
 }
 
+data_type vector_type(const vector* vec) {
+	if (!is_valid_vector_pointer(vec)) {
+		fprintf(stderr, "Error cannot get the type of an invalid vector pointer");
+		exit(EXIT_FAILURE);
+	}
+	return vec->type;
+}
+
 uint32_t vector_size(const vector* vec) {
 	if (!is_valid_vector_pointer(vec)) {
 		fprintf(stderr, "Error cannot get the size of an invalid vector pointer.\n");

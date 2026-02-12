@@ -34,6 +34,9 @@ void vector_free(vector *vec);
 // Print a vector
 void vector_print(const vector *vec);
 
+// Get the type
+data_type vector_type(const vector* vec);
+
 // Get the size of a vector
 uint32_t vector_size(const vector* vec);
 
