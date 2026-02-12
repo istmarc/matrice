@@ -143,18 +143,18 @@ int main() {
 
 In OCaml, two records `Vector.vector` and `Matrix.matrix` are define.
 
-An working example is the following:
+A working example is the following:
 
 ```ocaml
 open Matrice
 
-(*Create an initialized matrix of float*)
+(*Create an uninitialized matrix of float*)
 let rows = 3;;
 let cols = 4;;
 let a = Matrix.make Float32 rows cols;;
 Matrix.print_endline a;;
 
-(*Create an initialized vector of int*)
+(*Create an uninitialized vector of int*)
 let b = Vector.make Int32 10;;
 (*Set the values*)
 for i = 0 to 9 do
