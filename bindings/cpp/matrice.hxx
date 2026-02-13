@@ -159,25 +159,25 @@ public:
    }
 
    vector operator+(const vector &v) {
-      vector out(vec->type, vec->size);
+      vector out(vec->size);
       matrice_c::vector_add(vec, v.ptr(), out.ptr());
       return out;
    }
 
    vector operator-(const vector &v) {
-      vector out(vec->type, vec->size);
+      vector out(vec->size);
       matrice_c::vector_sub(vec, v.ptr(), out.ptr());
       return out;
    }
 
    vector operator*(const vector &v) {
-      vector out(vec->type, vec->size);
+      vector out(vec->size);
       matrice_c::vector_mul(vec, v.ptr(), out.ptr());
       return out;
    }
 
    vector operator/(const vector &v) {
-      vector out(vec->type, vec->size);
+      vector out(vec->size);
       matrice_c::vector_div(vec, v.ptr(), out.ptr());
       return out;
    }
@@ -233,7 +233,7 @@ class matrix {
  public:
    // Create a matrix from type, rows and columns
    matrix(uint32_t rows, uint32_t cols) : own_mat(true) {
-      dat_type type = to_data_type<T>();
+      data_type type = to_data_type<T>();
       uint32_t shape[2] = {rows, cols};
       mat = matrice_c::matrix_make(type, shape);
    }
@@ -350,7 +350,7 @@ class matrix {
    // Get the value at index casted to a type T
    const T &at(uint32_t index) const {
       T *data = (T *)mat->data;
-      return mat[index];
+      return data[index];
    }
 
    // Get the value at index casted to a type T
@@ -375,33 +375,33 @@ public:
 
    // Elementwise matrix addition
    matrix operator+(const matrix &m) {
-      matrix out(mat->type, mat->shape);
+      matrix out(mat->shape);
       matrice_c::matrix_add(mat, m.ptr(), out.ptr());
       return out;
    }
 
    // Elementwise matrix substraction
    matrix operator-(const matrix &m) {
-      matrix out(mat->type, mat->shape);
+      matrix out(mat->shape);
       matrice_c::matrix_sub(mat, m.ptr(), out.ptr());
       return out;
    }
 
    // Elementwise matrix multiplication
    matrix operator*(const matrix &m) {
-      matrix out(mat->type, mat->shape);
+      matrix out(mat->shape);
       matrice_c::matrix_mul(mat, m.ptr(), out.ptr());
       return out;
    }
 
    // Elementwise matrix division
    matrix operator/(const matrix &m) {
-      matrix out(mat->type, mat->shape);
+      matrix out(mat->shape);
       matrice_c::matrix_div(mat, m.ptr(), out.ptr());
       return out;
    }
 
-   template<Ty>
+   template<class Ty>
    friend std::ostream &operator<<(std::ostream &os, const matrix<Ty> &);
 };
 
@@ -412,8 +412,8 @@ std::ostream &operator<<(std::ostream &os, const matrix<T> &mat) {
 }
 
 // Instantiation
-template class matrix<int>;
 template class matrix<float>;
+template class matrix<int>;
 template class matrix<double>;
 template class matrix<int64_t>;
 
@@ -453,8 +453,9 @@ matrix<T> zeros(uint32_t rows, uint32_t cols) {
 template<class T>
 matrix<T> arange(uint32_t rows, uint32_t cols, T value = T(0)) {
    uint32_t shape[2] = {rows, cols};
+   data_type type = to_data_type<T>();
    matrice_c::matrix *ptr =
-       matrice_c::matrix_arange(data_type::kint, shape, &value);
+       matrice_c::matrix_arange(type, shape, &value);
    return matrix<T>(ptr);
 }
 

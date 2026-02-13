@@ -3,6 +3,20 @@
 #include <stdio.h>
 #include <math.h>
 
+bool are_int32(const matrix* x, const matrix* y) {
+	return x->type == kint && y->type == kint;
+}
+
+bool are_float32(const matrix* x, const matrix* y) {
+	return (x->type == kfloat ||  x->type == kfloat32) && (y->type == kfloat || y->type == kfloat32);
+}
+bool are_float64(const matrix* x, const matrix* y) {
+	return (x->type == kfloat64 ||  x->type == kdouble) && (y->type == kfloat64 || y->type == kdouble);
+}
+bool are_int64(const matrix* x, const matrix* y) {
+	return x->type == kint64 && y->type == kint64;
+}
+
 uint32_t matrix_compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col) {
 	return row * strides[0] + col * strides[1];
 }
@@ -269,12 +283,12 @@ void matrix_add(const matrix* x, const matrix* y, matrix* z) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (x->type != y->type) {
-		fprintf(stderr, "Error matrix_add different types.");
+	if (!(are_float32(x, y) || are_float64(x, y) || are_int32(x, y) || are_int64(x, y))) {
+		fprintf(stderr, "Error add different types.");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != z->type) {
-		fprintf(stderr, "Error matrix_add different output type.");
+	if (!(are_float32(x, z) || are_float64(x, z) || are_int32(x, z) || are_int64(x, z))) {
+		fprintf(stderr, "Error add different output type.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -338,12 +352,12 @@ void matrix_sub(const matrix* x, const matrix* y, matrix* z) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (x->type != y->type) {
-		fprintf(stderr, "Error matrix_add different types.");
+	if (!(are_float32(x, y) || are_float64(x, y) || are_int32(x, y) || are_int64(x, y))) {
+		fprintf(stderr, "Error sub different types.");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != z->type) {
-		fprintf(stderr, "Error matrix_add different output type.");
+	if (!(are_float32(x, z) || are_float64(x, z) || are_int32(x, z) || are_int64(x, z))) {
+		fprintf(stderr, "Error sub different output type.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -407,12 +421,12 @@ void matrix_mul(const matrix* x, const matrix* y, matrix* z) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (x->type != y->type) {
-		fprintf(stderr, "Error matrix_add different types.");
+	if (!(are_float32(x, y) || are_float64(x, y) || are_int32(x, y) || are_int64(x, y))) {
+		fprintf(stderr, "Error mul different types.");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != z->type) {
-		fprintf(stderr, "Error matrix_add different output type.");
+	if (!(are_float32(x, z) || are_float64(x, z) || are_int32(x, z) || are_int64(x, z))) {
+		fprintf(stderr, "Error mul different output type.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -476,12 +490,12 @@ void matrix_div(const matrix* x, const matrix* y, matrix* z) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (x->type != y->type) {
-		fprintf(stderr, "Error matrix_add different types.");
+	if (!(are_float32(x, y) || are_float64(x, y) || are_int32(x, y) || are_int64(x, y))) {
+		fprintf(stderr, "Error div different types.");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != z->type) {
-		fprintf(stderr, "Error matrix_add different output type.");
+	if (!(are_float32(x, z) || are_float64(x, z) || are_int32(x, z) || are_int64(x, z))) {
+		fprintf(stderr, "Error div different output type.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -545,12 +559,12 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (x->type != y->type) {
-		fprintf(stderr, "Error different input types.");
+	if (!(are_float32(x, y) || are_float64(x, y) || are_int32(x, y) || are_int64(x, y))) {
+		fprintf(stderr, "Error matrix multiplication different types.");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != z->type) {
-		fprintf(stderr, "Error matrix different output type.");
+	if (!(are_float32(x, z) || are_float64(x, z) || are_int32(x, z) || are_int64(x, z))) {
+		fprintf(stderr, "Error matrix multiplication different output type.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -690,7 +704,7 @@ void matrix_transpose(const matrix* x, matrix* y) {
 		fprintf(stderr, "Matrix transpose y is an invalid matrix pointer.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (x->type != y->type) {
+	if (!(are_int32(x, y) || are_float32(x,y) || are_float64(x, y))) {
 		fprintf(stderr, "Matrix transpose, different data types.\n");
 		exit(EXIT_FAILURE);
 	}

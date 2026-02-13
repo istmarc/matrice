@@ -15,6 +15,8 @@ int main() {
    {
       matrix x = arange(3, 3, 1.0f);
       matrix y = arange(3, 3, 1.0f);
+      std::cout << x;
+      std::cout << y;
       auto z = x + y;
       std::cout << z;
    }

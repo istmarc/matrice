@@ -3,6 +3,7 @@ src = $(wildcard src/*.c)
 objs = matrix.o vector.o
 blas_library = -lopenblas
 CFLAGS ?= -Wall -fvectorize -fPIC -O2 -march=native
+CXXFLAS ?= -Wall -O2 -march=native -std=c++11
 INSTALL_DIR ?= /usr/local
 
 main:
@@ -18,7 +19,7 @@ test:
 
 test-cpp:
 	@make main
-	$(CXX) tests-cpp/test_bindings_cpp.cxx -o test_bindings_cpp libmatrice.so
+	$(CXX) $(CXXFLAGS) tests-cpp/test_bindings_cpp.cxx -o test_bindings_cpp libmatrice.so
 
 bench:
 	$(CC) -include $(headers) $(CCFLAGS) -c src/matrix.c -o matrix.o
