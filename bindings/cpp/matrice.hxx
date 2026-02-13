@@ -5,6 +5,8 @@
 #include <initializer_list>
 #include <iostream>
 #include <stdexcept>
+#include <type_traits>
+#include <string>
 
 namespace matrice_c {
 #include <matrice/data_type.h>
@@ -16,45 +18,51 @@ namespace matrice {
 
 using data_type = matrice_c::data_type;
 
+template<class T>
+auto to_data_type() -> decltype(auto) {
+   /*
+   static_assert(std::is_same_v<T, int> || std::is_same_v<T, int64_t>,
+      || std::is_same_v<T, float> || std::is_same_v<T, double>, "Unsupported type.\n");
+   */
+
+   if (std::is_same_v<T, int>)
+      return data_type::kint32;
+   else if (std::is_same_v<T, float>)
+      return data_type::kfloat32;
+   else if (std::is_same_v<T, double>)
+      return data_type::kfloat64;
+   else if (std::is_same_v<T, int64_t>)
+      return data_type::kint64;
+
+}
+
 // Bindings for vector data type
+template<class T>
 class vector {
+public:
+   /*static_assert(std::is_same_v<T, int> || std::is_same_v<T, int64_t>,
+      || std::is_same_v<T, float> || std::is_same_v<T, double>, "Unsupported data type");
+   */
+
  private:
    bool own_vec = true;
    matrice_c::vector *vec = nullptr;
 
  public:
    // Construct a vector from type and size
-   vector(data_type type, uint32_t size) : own_vec(true) {
+   vector(uint32_t size) : own_vec(true) {
+      data_type type = to_data_type<T>();
       vec = matrice_c::vector_make(type, size);
    }
 
    vector(matrice_c::vector *ptr) : own_vec(true), vec(ptr) {}
 
-   // Constructor from an initializer_list of int
-   vector(std::initializer_list<int> values) : own_vec(true) {
+   // Constructor from an initializer_list of T
+   vector(std::initializer_list<T> values) : own_vec(true) {
       uint32_t size = values.size();
-      vec = matrice_c::vector_make(data_type::kint, size);
-      int *data = (int *)vec->data;
-      for (uint32_t i = 0; i < size; i++) {
-         data[i] = *(values.begin() + i);
-      }
-   }
-
-   // Constructor from an initializer_list of float
-   vector(std::initializer_list<float> values) : own_vec(true) {
-      uint32_t size = values.size();
-      vec = matrice_c::vector_make(data_type::kfloat, size);
-      float *data = (float *)vec->data;
-      for (uint32_t i = 0; i < size; i++) {
-         data[i] = *(values.begin() + i);
-      }
-   }
-
-   // Constructor from an initializer_list of double
-   vector(std::initializer_list<double> values) : own_vec(true) {
-      uint32_t size = values.size();
-      vec = matrice_c::vector_make(data_type::kdouble, size);
-      double *data = (double *)vec->data;
+      data_type type = to_data_type<T>();
+      vec = matrice_c::vector_make(type, size);
+      T *data = (T *)vec->data;
       for (uint32_t i = 0; i < size; i++) {
          data[i] = *(values.begin() + i);
       }
@@ -113,37 +121,41 @@ class vector {
    matrice_c::vector *ptr() const { return vec; }
 
    // Get the pointer to the data
-   template <class T> const T *data() const {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
+   const T *data() const {
       return (const T *)vec->data;
    }
 
    // Get the mutable pointer to the data
-   template <class T> T *mutable_data() {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Unsupported type.\n");
+   T *mutable_data() {
       return (T *)vec->data;
    }
 
    // Get the value at index
-   template <class T> const T &at(uint32_t index) const {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Unsupported type.\n");
+   const T &at(uint32_t index) const {
       T *data = (T *)vec->data;
       return data[index];
    }
 
    // Get the value at index
-   template <class T> T &at(uint32_t index) {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Unsupported type.\n");
+   T &at(uint32_t index) {
       T *data = (T *)vec->data;
       return data[index];
+   }
+
+   // Overload the [] operator
+   const T &operator[](uint32_t index) const {
+      return at(index);
+   }
+   T &operator[](uint32_t index) {
+      return at(index);
+   }
+
+   // Overload the () operator
+   const T &operator()(uint32_t index) const {
+      return at(index);
+   }
+   T &operator()(uint32_t index) {
+      return at(index);
    }
 
    vector operator+(const vector &v) {
@@ -170,44 +182,49 @@ class vector {
       return out;
    }
 
-   friend std::ostream &operator<<(std::ostream &os, const vector &);
+   template<class Ty>
+   friend std::ostream &operator<<(std::ostream &os, const vector<Ty> &);
 };
 
-std::ostream &operator<<(std::ostream &os, const vector &v) {
+template<class T>
+std::ostream &operator<<(std::ostream &os, const vector<T> &v) {
    matrice_c::vector_print(v.vec);
    return os;
 }
 
+// Instantiation
+template class vector<int>;
+template class vector<float>;
+template class vector<double>;
+template class vector<int64_t>;
+
 // Create a vector of ones
-vector ones(data_type type, uint32_t size) {
+template<class T>
+vector<T> ones(uint32_t size) {
+   data_type type = to_data_type<T>();
    matrice_c::vector *ptr = matrice_c::vector_ones(type, size);
-   return vector(ptr);
+   return vector<T>(ptr);
 }
 
 // Create a vector of zeros
-vector zeros(data_type type, uint32_t size) {
+template<class T>
+vector<T> zeros(uint32_t size) {
+   data_type type = to_data_type<T>();
    matrice_c::vector *ptr = matrice_c::vector_zeros(type, size);
-   return vector(ptr);
+   return vector<T>(ptr);
 }
 
 // Create a vector of arange
-vector arange(uint32_t size, int value = 0) {
+template<class T>
+vector<T> arange(uint32_t size, T value = T(0)) {
+   data_type type = to_data_type<T>();
    matrice_c::vector *ptr =
-       matrice_c::vector_arange(data_type::kint, size, &value);
-   return vector(ptr);
-}
-vector arange(uint32_t size, float value = 0.f) {
-   matrice_c::vector *ptr =
-       matrice_c::vector_arange(data_type::kfloat, size, &value);
-   return vector(ptr);
-}
-vector arange(uint32_t size, double value = 0.) {
-   matrice_c::vector *ptr =
-       matrice_c::vector_arange(data_type::kdouble, size, &value);
-   return vector(ptr);
+       matrice_c::vector_arange(type, size, &value);
+   return vector<T>(ptr);
 }
 
 // Binding for matrix type
+template<class T>
 class matrix {
  private:
    bool own_mat = true;
@@ -215,13 +232,15 @@ class matrix {
 
  public:
    // Create a matrix from type, rows and columns
-   matrix(data_type type, uint32_t rows, uint32_t cols) : own_mat(true) {
+   matrix(uint32_t rows, uint32_t cols) : own_mat(true) {
+      dat_type type = to_data_type<T>();
       uint32_t shape[2] = {rows, cols};
       mat = matrice_c::matrix_make(type, shape);
    }
 
    // Create a matrix from type and shape
-   matrix(data_type type, uint32_t shape[2]) : own_mat(true) {
+   matrix(uint32_t shape[2]) : own_mat(true) {
+      data_type type = to_data_type<T>();
       mat = matrice_c::matrix_make(type, shape);
    }
 
@@ -231,9 +250,9 @@ class matrix {
       mat = ptr;
    }
 
-   // Constructor from an initializer_list<initializer_list> of int
+   // Constructor from an initializer_list<initializer_list> of T
    // The list are interpreted as the columns of the matrix
-   matrix(std::initializer_list<std::initializer_list<int>> values)
+   matrix(std::initializer_list<std::initializer_list<T>> values)
        : own_mat(true) {
       uint32_t cols = values.size();
       uint32_t rows = values.begin()->size();
@@ -244,56 +263,9 @@ class matrix {
          }
       }
       uint32_t shape[2] = {rows, cols};
-      mat = matrice_c::matrix_make(data_type::kint, shape);
+      data_type type = to_data_type<T>();
+      mat = matrice_c::matrix_make(type, shape);
       int *data = (int *)mat->data;
-      for (uint32_t j = 0; j < cols; j++) {
-         for (uint32_t i = 0; i < rows; i++) {
-            auto iter_col = values.begin() + j;
-            auto iter_row = (*iter_col).begin() + i;
-            data[i * mat->strides[0] + j * mat->strides[1]] = *iter_row;
-         }
-      }
-   }
-
-   // Constructor from an initializer_list<initializer_list> of float
-   // The list are interpreted as the columns of the matrix
-   matrix(std::initializer_list<std::initializer_list<float>> values)
-       : own_mat(true) {
-      uint32_t cols = values.size();
-      uint32_t rows = values.begin()->size();
-      for (uint32_t i = 1; i < cols; i++) {
-         auto iter = values.begin() + i;
-         if (iter->size() != rows) {
-            throw std::runtime_error("Invalid matrix row size.\n");
-         }
-      }
-      uint32_t shape[2] = {rows, cols};
-      mat = matrice_c::matrix_make(data_type::kfloat, shape);
-      float *data = (float *)mat->data;
-      for (uint32_t j = 0; j < cols; j++) {
-         for (uint32_t i = 0; i < rows; i++) {
-            auto iter_col = values.begin() + j;
-            auto iter_row = (*iter_col).begin() + i;
-            data[i * mat->strides[0] + j * mat->strides[1]] = *iter_row;
-         }
-      }
-   }
-
-   // Constructor from an initializer_list<initializer_list> of double
-   // The list are interpreted as the columns of the matrix
-   matrix(std::initializer_list<std::initializer_list<double>> values)
-       : own_mat(true) {
-      uint32_t cols = values.size();
-      uint32_t rows = values.begin()->size();
-      for (uint32_t i = 1; i < cols; i++) {
-         auto iter = values.begin() + i;
-         if (iter->size() != rows) {
-            throw std::runtime_error("Invalid matrix row size.\n");
-         }
-      }
-      uint32_t shape[2] = {rows, cols};
-      mat = matrice_c::matrix_make(data_type::kdouble, shape);
-      double *data = (double *)mat->data;
       for (uint32_t j = 0; j < cols; j++) {
          for (uint32_t i = 0; i < rows; i++) {
             auto iter_col = values.begin() + j;
@@ -366,62 +338,40 @@ class matrix {
    }
 
    // Get the pointer to the data casted to a type T
-   template <class T> const T *data() const {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
+   const T *data() const {
       return (const T *)mat->data;
    }
 
    // Get the pointer to the mutable data casted to a type T
-   template <class T> T *mutable_data() {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
+   T *mutable_data() {
       return (T *)mat->data;
    }
 
    // Get the value at index casted to a type T
-   template <class T> const T &at(uint32_t index) const {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
+   const T &at(uint32_t index) const {
       T *data = (T *)mat->data;
       return mat[index];
    }
 
    // Get the value at index casted to a type T
-   template <class T> T &at(uint32_t index) {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
+   T &at(uint32_t index) {
       T *data = (T *)mat->data;
       return data[index];
    }
 
- private:
-   uint32_t compute_offset(uint32_t row, uint32_t col) const {
-      return row * mat->strides[0] + col * mat->strides[1];
+public:
+   const T&operator()(uint32_t row, uint32_t col) const {
+      uint32_t offset = matrice_c::matrix_compute_offset(mat->strides, row, col);
+      return at(offset);
    }
 
- public:
-   // Get the value at row and col casted to a type T
-   template <class T> const T &at(uint32_t row, uint32_t col) const {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
-      T *data = (T *)mat->data;
-      return mat[compute_offset(row, col)];
+   T&operator()(uint32_t row, uint32_t col) {
+      uint32_t offset = matrice_c::matrix_compute_offset(mat->strides, row, col);
+      return at(offset);
    }
 
-   // Get the value at row and col casted to a type T
-   template <class T> T &at(uint32_t row, uint32_t col) {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> ||
-                        std::is_same_v<T, double>,
-                    "Incompatible output type.");
-      T *data = (T *)mat->data;
-      return data[compute_offset(row, col)];
-   }
+   const T& operator[](uint32_t index) const { return at(index);}
+   T& operator[](uint32_t index) {return at(index);}
 
    // Elementwise matrix addition
    matrix operator+(const matrix &m) {
@@ -451,63 +401,61 @@ class matrix {
       return out;
    }
 
-   friend std::ostream &operator<<(std::ostream &os, const matrix &);
+   template<Ty>
+   friend std::ostream &operator<<(std::ostream &os, const matrix<Ty> &);
 };
 
-std::ostream &operator<<(std::ostream &os, const matrix &mat) {
+template<class T>
+std::ostream &operator<<(std::ostream &os, const matrix<T> &mat) {
    matrice_c::matrix_print(mat.ptr());
    return os;
 }
 
+// Instantiation
+template class matrix<int>;
+template class matrix<float>;
+template class matrix<double>;
+template class matrix<int64_t>;
+
 // Matrix multiplication
-matrix matmul(const matrix &x, const matrix &y) {
-   if (x.type() != y.type()) {
-      throw std::runtime_error(
-          "Matrix multiplication error, different types.\n");
-   }
+template<class T>
+matrix<T> matmul(const matrix<T> &x, const matrix<T> &y) {
    if (x.cols() != y.rows()) {
       throw std::runtime_error(
           "Matrix multiplication error, incompatible matrice shapes.\n");
    }
    uint32_t rows = x.rows();
    uint32_t cols = y.cols();
-   matrix z(x.type(), rows, cols);
+   matrix<T> z(rows, cols);
    matrice_c::matrix_matmul(x.ptr(), y.ptr(), z.ptr());
    return z;
 }
 
 // Create a matrix of ones
-matrix ones(data_type type, uint32_t rows, uint32_t cols) {
+template<class T>
+matrix<T> ones(uint32_t rows, uint32_t cols) {
+   data_type type = to_data_type<T>();
    uint32_t shape[2] = {rows, cols};
    matrice_c::matrix *ptr = matrice_c::matrix_ones(type, shape);
-   return matrix(ptr);
+   return matrix<T>(ptr);
 }
 
 // Create a matrix of zeros
-matrix zeros(data_type type, uint32_t rows, uint32_t cols) {
+template<class T>
+matrix<T> zeros(uint32_t rows, uint32_t cols) {
+   data_type type = to_data_type<T>();
    uint32_t shape[2] = {rows, cols};
    matrice_c::matrix *ptr = matrice_c::matrix_zeros(type, shape);
-   return matrix(ptr);
+   return matrix<T>(ptr);
 }
 
 // Create a matrix of arange
-matrix arange(uint32_t rows, uint32_t cols, int value = 0) {
+template<class T>
+matrix<T> arange(uint32_t rows, uint32_t cols, T value = T(0)) {
    uint32_t shape[2] = {rows, cols};
    matrice_c::matrix *ptr =
        matrice_c::matrix_arange(data_type::kint, shape, &value);
-   return matrix(ptr);
-}
-matrix arange(uint32_t rows, uint32_t cols, float value = 0.f) {
-   uint32_t shape[2] = {rows, cols};
-   matrice_c::matrix *ptr =
-       matrice_c::matrix_arange(data_type::kfloat, shape, &value);
-   return matrix(ptr);
-}
-matrix arange(uint32_t rows, uint32_t cols, double value = 0.) {
-   uint32_t shape[2] = {rows, cols};
-   matrice_c::matrix *ptr =
-       matrice_c::matrix_arange(data_type::kdouble, shape, &value);
-   return matrix(ptr);
+   return matrix<T>(ptr);
 }
 
 } // namespace matrice

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
-uint32_t compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col) {
+uint32_t matrix_compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col) {
 	return row * strides[0] + col * strides[1];
 }
 
@@ -95,7 +95,7 @@ void matrix_print(const matrix *mat) {
 	printf("\n");
 	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < cols; j++) {
-			uint32_t offset = compute_offset(mat->strides, i, j);
+			uint32_t offset = matrix_compute_offset(mat->strides, i, j);
 			if (mat->type == kint || mat->type == kint32) {
 				int *casted_data = (int *)mat->data;
 				printf("%i", casted_data[offset]);
@@ -147,7 +147,7 @@ void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value) {
 		fprintf(stderr, "Error cannot get value from an ivalid matrix pointer.\n");
 		exit(EXIT_FAILURE);
 	}
-	uint32_t offset = compute_offset(mat->strides, row, col);
+	uint32_t offset = matrix_compute_offset(mat->strides, row, col);
 	if (offset >= mat->size) {
 		fprintf(stderr, "Index out of range.\n");
 		exit(EXIT_FAILURE);
@@ -210,7 +210,7 @@ void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value) {
 		fprintf(stderr, "Error cannot get value from an invalid matrix pointer.\n");
 		exit(EXIT_FAILURE);
 	}
-	uint32_t offset = compute_offset(mat->strides, row, col);
+	uint32_t offset = matrix_compute_offset(mat->strides, row, col);
 	if (offset >= mat->size) {
 		fprintf(stderr, "Index [%i, %i] out of range.\n", row, col);
 	}

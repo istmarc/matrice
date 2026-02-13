@@ -8,8 +8,8 @@ int main() {
       vector y = arange(10, 1.0f);
       auto z = x + y;
       std::cout << z;
-      std::cout << z.at<float>(0) << std::endl;
-      std::cout << z.data<float>()[0] << std::endl;
+      std::cout << z[0] << std::endl;
+      std::cout << z(0) << std::endl;
    }
 
    {

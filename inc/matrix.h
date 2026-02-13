@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 // Compute the linear offset
-uint32_t compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col);
+uint32_t matrix_compute_offset(const uint32_t strides[2], const uint32_t row, const uint32_t col);
 
 // Matrix data type
 typedef struct matrix {
