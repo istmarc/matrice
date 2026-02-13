@@ -3,7 +3,7 @@
 Column major matrix data type in pure C with bindings
 
 ## Features
-- [x] Basic vector and matrix type for `int` (`int32`), `float` (`float32`) and `double` (`float64`).
+- [x] Basic vector and matrix type for `int` (`int32`), `int64`, `float` (`float32`) and `double` (`float64`).
 - [x] Factory functions: `vector_ones`,`vector_zeros`, `vector_fill`, `vector_arange`, `matrix_ones`, `matrix_zeros`, `matrix_fill` and `matrix_arange`.
 - [x] Elementwise vector and matrix operations `vector_add`, `vector_sub`, `vector_mul`, `vector_div`, `matrix_add`, `matrix_sub`, `matrix_mul`, and `matrix_div`.
 - [x] Matrix multiplication using auto vectorization

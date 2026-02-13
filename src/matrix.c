@@ -32,12 +32,14 @@ matrix *matrix_make(data_type type, uint32_t shape[2]) {
 
 	// Allocate the data
 	void *data = NULL;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		data = (int *)malloc(size * sizeof(int));
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		data = (float *)malloc(size * sizeof(float));
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		data = (double *)malloc(size * sizeof(double));
+	} else if (type == kint64) {
+		data = (int64_t*)malloc(size * sizeof(int64_t));
 	} else {
 		fprintf(stderr, "Error unknown data type.\n");
 		exit(EXIT_FAILURE);
@@ -81,26 +83,31 @@ void matrix_print(const matrix *mat) {
 	uint32_t rows = mat->shape[0];
 	uint32_t cols = mat->shape[1];
 	printf("matrix of ");
-	if (mat->type == kint) {
-		printf("int");
-	} else if (mat->type == kfloat) {
-		printf("float");
-	} else if (mat->type == kdouble) {
-		printf("double");
+	if (mat->type == kint || mat->type == kint32) {
+		printf("int32");
+	} else if (mat->type == kfloat || mat->type == kfloat32) {
+		printf("float32");
+	} else if (mat->type == kdouble || mat->type == kfloat64) {
+		printf("float64");
+	} else if (mat->type == kint64) {
+		printf("int64");
 	}
 	printf("\n");
 	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < cols; j++) {
 			uint32_t offset = compute_offset(mat->strides, i, j);
-			if (mat->type == kint) {
+			if (mat->type == kint || mat->type == kint32) {
 				int *casted_data = (int *)mat->data;
 				printf("%i", casted_data[offset]);
-			} else if (mat->type == kfloat) {
+			} else if (mat->type == kfloat || mat->type == kfloat32) {
 				float *casted_data = (float *)mat->data;
 				printf("%f", casted_data[offset]);
-			} else if (mat->type == kdouble) {
+			} else if (mat->type == kdouble || mat->type == kfloat64) {
 				double *casted_data = (double *)mat->data;
 				printf("%f", casted_data[offset]);
+			} else if (mat->type == kint64) {
+				int64_t *casted_data = (int64_t *)mat->data;
+				printf("%li", casted_data[offset]);
 			}
 			if (j + 1 < cols) {
 				printf(" ");
@@ -145,18 +152,22 @@ void matrix_get(const matrix* mat, uint32_t row, uint32_t col, void* value) {
 		fprintf(stderr, "Index out of range.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (mat->type == kint) {
+	if (mat->type == kint || mat->type == kint32) {
 		int* data = (int *)mat->data;
 		int* value_int = (int*) value;
 		*value_int = data[offset];
-	} else if (mat->type == kfloat) {
+	} else if (mat->type == kfloat || mat->type == kfloat32) {
 		float *data = (float *)mat->data;
 		float* value_float = (float*) value;
 		*value_float = data[offset];
-	} else if (mat->type == kdouble) {
+	} else if (mat->type == kdouble || mat->type == kfloat64) {
 		double* data = (double *)mat->data;
 		double* value_double = (double*) value;
 		*value_double = data[offset];
+	} else if (mat->type == kint64) {
+		int64_t* data = (int64_t *)mat->data;
+		int64_t* value_int = (int64_t*) value;
+		*value_int = data[offset];
 	} else {
 		fprintf(stderr, "Unknown data type.\n");
 		exit(EXIT_FAILURE);
@@ -172,18 +183,22 @@ void matrix_at(const matrix* mat, uint32_t index, void* value) {
 		fprintf(stderr, "Index out %i of range [0, %i].\n", index, mat->size);
 		exit(EXIT_FAILURE);
 	}
-	if (mat->type == kint) {
+	if (mat->type == kint || mat->type == kint32) {
 		int* data = (int *)mat->data;
 		int* value_int = (int*) value;
 		*value_int = data[index];
-	} else if (mat->type == kfloat) {
+	} else if (mat->type == kfloat || mat->type == kfloat32) {
 		float *data = (float *)mat->data;
 		float* value_float = (float*) value;
 		*value_float = data[index];
-	} else if (mat->type == kdouble) {
+	} else if (mat->type == kdouble || mat->type == kfloat64) {
 		double* data = (double *)mat->data;
 		double* value_double = (double*) value;
 		*value_double = data[index];
+	} else if (mat->type == kint64) {
+		int64_t* data = (int64_t *)mat->data;
+		int64_t* value_int = (int64_t*) value;
+		*value_int = data[index];
 	} else {
 		fprintf(stderr, "Unknown data type.\n");
 		exit(EXIT_FAILURE);
@@ -199,15 +214,18 @@ void matrix_set(matrix* mat, uint32_t row, uint32_t col, void* value) {
 	if (offset >= mat->size) {
 		fprintf(stderr, "Index [%i, %i] out of range.\n", row, col);
 	}
-	if (mat->type == kint) {
+	if (mat->type == kint || mat->type == kint32) {
 		int *ptr = (int *)mat->data;
 		ptr[offset] = *(int *)value;
-	} else if (mat->type == kfloat) {
+	} else if (mat->type == kfloat || mat->type == kfloat32) {
 		float *ptr = (float *)mat->data;
 		ptr[offset] = *(float *)value;
-	} else if (mat->type == kdouble) {
+	} else if (mat->type == kdouble || mat->type == kfloat64) {
 		double *ptr = (double *)mat->data;
 		ptr[offset] = *(double *)value;
+	} else if (mat->type == kint64) {
+		int64_t *ptr = (int64_t *)mat->data;
+		ptr[offset] = *(int64_t *)value;
 	}
 }
 
@@ -219,15 +237,18 @@ void matrix_set_at(matrix* mat, uint32_t index, void* value) {
 	if (index >= mat->size) {
 		fprintf(stderr, "Index %idx out of range 0-%i.\n", index, mat->size);
 	}
-	if (mat->type == kint) {
+	if (mat->type == kint || mat->type == kint32) {
 		int *ptr = (int *)mat->data;
 		ptr[index] = *(int *)value;
-	} else if (mat->type == kfloat) {
+	} else if (mat->type == kfloat || mat->type == kfloat32) {
 		float *ptr = (float *)mat->data;
 		ptr[index] = *(float *)value;
-	} else if (mat->type == kdouble) {
+	} else if (mat->type == kdouble || mat->type == kfloat64) {
 		double *ptr = (double *)mat->data;
 		ptr[index] = *(double *)value;
+	} else if (mat->type == kint64) {
+		int64_t *ptr = (int64_t *)mat->data;
+		ptr[index] = *(int64_t *)value;
 	} else {
 		fprintf(stderr, "Error unknown data type.\n");
 		exit(EXIT_FAILURE);
@@ -268,7 +289,7 @@ void matrix_add(const matrix* x, const matrix* y, matrix* z) {
 
 	uint32_t size = x->size;
 	data_type type = x->type;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*) x->data;
 		int* casted_y = (int*) y->data;
 		int* casted_z = (int*) z->data;
@@ -276,7 +297,7 @@ void matrix_add(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] + casted_y[i];
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*) x->data;
 		float* casted_y = (float*) y->data;
 		float* casted_z = (float*) z->data;
@@ -284,10 +305,18 @@ void matrix_add(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] + casted_y[i];
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*) x->data;
 		double* casted_y = (double*) y->data;
 		double* casted_z = (double*) z->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] + casted_y[i];
+		}
+	} else if (type == kint64) {
+		int64_t* casted_x = (int64_t*) x->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		int64_t* casted_z = (int64_t*) z->data;
 		#pragma clang loop vectorize(enable)
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] + casted_y[i];
@@ -329,7 +358,7 @@ void matrix_sub(const matrix* x, const matrix* y, matrix* z) {
 
 	uint32_t size = x->size;
 	data_type type = x->type;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*) x->data;
 		int* casted_y = (int*) y->data;
 		int* casted_z = (int*) z->data;
@@ -337,7 +366,7 @@ void matrix_sub(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] - casted_y[i];
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*) x->data;
 		float* casted_y = (float*) y->data;
 		float* casted_z = (float*) z->data;
@@ -345,10 +374,18 @@ void matrix_sub(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] - casted_y[i];
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*) x->data;
 		double* casted_y = (double*) y->data;
 		double* casted_z = (double*) z->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] - casted_y[i];
+		}
+	} else if (type == kint64) {
+		int64_t* casted_x = (int64_t*) x->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		int64_t* casted_z = (int64_t*) z->data;
 		#pragma clang loop vectorize(enable)
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] - casted_y[i];
@@ -390,7 +427,7 @@ void matrix_mul(const matrix* x, const matrix* y, matrix* z) {
 
 	uint32_t size = x->size;
 	data_type type = x->type;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*) x->data;
 		int* casted_y = (int*) y->data;
 		int* casted_z = (int*) z->data;
@@ -398,7 +435,7 @@ void matrix_mul(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] * casted_y[i];
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*) x->data;
 		float* casted_y = (float*) y->data;
 		float* casted_z = (float*) z->data;
@@ -406,10 +443,18 @@ void matrix_mul(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] * casted_y[i];
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*) x->data;
 		double* casted_y = (double*) y->data;
 		double* casted_z = (double*) z->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] * casted_y[i];
+		}
+	} else if (type == kint64) {
+		int64_t* casted_x = (int64_t*) x->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		int64_t* casted_z = (int64_t*) z->data;
 		#pragma clang loop vectorize(enable)
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] * casted_y[i];
@@ -451,7 +496,7 @@ void matrix_div(const matrix* x, const matrix* y, matrix* z) {
 
 	uint32_t size = x->size;
 	data_type type = x->type;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*) x->data;
 		int* casted_y = (int*) y->data;
 		int* casted_z = (int*) z->data;
@@ -459,7 +504,7 @@ void matrix_div(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] / casted_y[i];
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*) x->data;
 		float* casted_y = (float*) y->data;
 		float* casted_z = (float*) z->data;
@@ -467,10 +512,18 @@ void matrix_div(const matrix* x, const matrix* y, matrix* z) {
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] / casted_y[i];
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*) x->data;
 		double* casted_y = (double*) y->data;
 		double* casted_z = (double*) z->data;
+		#pragma clang loop vectorize(enable)
+		for (uint32_t i = 0; i < size; i++) {
+			casted_z[i] = casted_x[i] / casted_y[i];
+		}
+	} else if (type == kint64) {
+		int64_t* casted_x = (int64_t*) x->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		int64_t* casted_z = (int64_t*) z->data;
 		#pragma clang loop vectorize(enable)
 		for (uint32_t i = 0; i < size; i++) {
 			casted_z[i] = casted_x[i] / casted_y[i];
@@ -519,7 +572,7 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 	uint32_t y_strides_cols = y->strides[1];
 	uint32_t z_strides_rows = z->strides[0];
 	uint32_t z_strides_cols = z->strides[1];
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		// Transpose x
 		uint32_t tshape[2] = {p, m};
 		matrix* tx = matrix_make(type, tshape);
@@ -545,7 +598,7 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 			}
 		}
 		matrix_free(tx);
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		// Transpose x
 		uint32_t tshape[2] = {p, m};
 		matrix* tx = matrix_make(type, tshape);
@@ -571,7 +624,7 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 			}
 		}
 		matrix_free(tx);
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		// Transpose x
 		uint32_t tshape[2] = {p, m};
 		matrix* tx = matrix_make(type, tshape);
@@ -585,6 +638,32 @@ void matrix_matmul(const matrix* x, const matrix* y, matrix* z) {
 		#pragma clang loop vectorize(enable)
 		for (uint32_t idx = 0; idx < m*n; idx++) {
 				casted_z[idx] = 0.;
+		}
+		for (uint32_t i = 0; i < m; i++) {
+			for (uint32_t j = 0; j < n; j++) {
+				#pragma clang loop vectorize(enable)
+				for (uint32_t k = 0; k < p; k++) {
+					casted_z[i*z_strides_rows + j*z_strides_cols]
+						+= casted_tx[k*tx_strides_rows+ i*tx_strides_cols] * casted_y[k*y_strides_rows + j*y_strides_cols];
+				}
+			}
+		}
+		matrix_free(tx);
+	} else if (type == kint64) {
+		// Transpose x
+		uint32_t tshape[2] = {p, m};
+		matrix* tx = matrix_make(type, tshape);
+		matrix_transpose(x, tx);
+		// Compute x*y in z
+		int64_t* casted_tx = (int64_t*) tx->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		int64_t* casted_z = (int64_t*) z->data;
+		uint32_t tx_strides_rows = tx->strides[0];
+		uint32_t tx_strides_cols = tx->strides[1];
+		// Initialize z to zero
+		#pragma clang loop vectorize(enable)
+		for (uint32_t idx = 0; idx < m*n; idx++) {
+				casted_z[idx] = 0;
 		}
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
@@ -626,7 +705,7 @@ void matrix_transpose(const matrix* x, matrix* y) {
 	uint32_t x_strides_cols = x->strides[1];
 	uint32_t y_strides_rows = y->strides[0];
 	uint32_t y_strides_cols = y->strides[1];
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*)x->data;
 		int* casted_y = (int*)y->data;
 		for (uint32_t i = 0; i < m; i++) {
@@ -634,7 +713,7 @@ void matrix_transpose(const matrix* x, matrix* y) {
 				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 			}
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*)x->data;
 		float* casted_y = (float*)y->data;
 		for (uint32_t i = 0; i < m; i++) {
@@ -642,9 +721,18 @@ void matrix_transpose(const matrix* x, matrix* y) {
 				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
 			}
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*)x->data;
 		double* casted_y = (double*)y->data;
+		for (uint32_t i = 0; i < m; i++) {
+			for (uint32_t j = 0; j < n; j++) {
+				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
+			}
+		}
+	}
+	else if (type == kint64) {
+		int64_t* casted_x = (int64_t*)x->data;
+		int64_t* casted_y = (int64_t*)y->data;
 		for (uint32_t i = 0; i < m; i++) {
 			for (uint32_t j = 0; j < n; j++) {
 				casted_y[j*y_strides_rows + i*y_strides_cols] = casted_x[i*x_strides_rows + j*x_strides_cols];
@@ -655,18 +743,23 @@ void matrix_transpose(const matrix* x, matrix* y) {
 
 matrix *matrix_ones(data_type type, uint32_t shape[2]) {
 	matrix *mat = matrix_make(type, shape);
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int value = 1;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float value = 1.f;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double value = 1.;
+		for (uint32_t i = 0; i < mat->size; i++) {
+			matrix_set_at(mat, i, &value);
+		}
+	} else if (type == kint64) {
+		int64_t value = 1.;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
@@ -676,18 +769,23 @@ matrix *matrix_ones(data_type type, uint32_t shape[2]) {
 
 matrix *matrix_zeros(data_type type, uint32_t shape[2]) {
 	matrix *mat = matrix_make(type, shape);
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int value = 0;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float value = 0.f;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double value = 0.;
+		for (uint32_t i = 0; i < mat->size; i++) {
+			matrix_set_at(mat, i, &value);
+		}
+	} else if (type == kint64) {
+		int64_t value = 0.;
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, &value);
 		}
@@ -697,15 +795,19 @@ matrix *matrix_zeros(data_type type, uint32_t shape[2]) {
 
 matrix *matrix_fill(data_type type, uint32_t shape[2], void* value) {
 	matrix *mat = matrix_make(type, shape);
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, value);
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, value);
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
+		for (uint32_t i = 0; i < mat->size; i++) {
+			matrix_set_at(mat, i, value);
+		}
+	} else if (type == kint64) {
 		for (uint32_t i = 0; i < mat->size; i++) {
 			matrix_set_at(mat, i, value);
 		}
@@ -715,25 +817,32 @@ matrix *matrix_fill(data_type type, uint32_t shape[2], void* value) {
 
 matrix *matrix_arange(data_type type, uint32_t shape[2], void* value) {
 	matrix *mat = matrix_make(type, shape);
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		matrix_set_at(mat, 0, value);
 		for (uint32_t i = 1; i < mat->size; i++) {
 			int next_value = ((int*)mat->data)[i-1] + 1;
 			matrix_set_at(mat, i, &next_value);
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		matrix_set_at(mat, 0, value);
 		for (uint32_t i = 1; i < mat->size; i++) {
 			float next_value = ((float*)mat->data)[i-1] + 1.f;
 			matrix_set_at(mat, i, &next_value);
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		matrix_set_at(mat, 0, value);
 		for (uint32_t i = 1; i < mat->size; i++) {
 			double next_value = ((double*)mat->data)[i-1] + 1.;
 			matrix_set_at(mat, i, &next_value);
 		}
+	} else if (type == kint64) {
+		matrix_set_at(mat, 0, value);
+		for (uint32_t i = 1; i < mat->size; i++) {
+			int64_t next_value = ((int64_t*)mat->data)[i-1] + 1.;
+			matrix_set_at(mat, i, &next_value);
+		}
 	}
+
 	return mat;
 }
 
@@ -757,32 +866,38 @@ bool matrix_are_close(const matrix* x, const matrix *y, double eps) {
 	uint32_t size = x->size;
 	data_type type = x->type;
 	bool ret = true;
-	if (type == kint) {
+	if (type == kint || type == kint32) {
 		int* casted_x = (int*) x->data;
 		int* casted_y = (int*) y->data;
 		for (uint32_t i = 0; i < size; i++) {
 			if (casted_x[i] != casted_y[i]) {
-				fprintf(stderr, "Error different values at index %i, x = %i and y = %i\n", i, casted_x[i], casted_y[i]);
 				ret = false;
 				break;
 			}
 		}
-	} else if (type == kfloat) {
+	} else if (type == kfloat || type == kfloat32) {
 		float* casted_x = (float*) x->data;
 		float* casted_y = (float*) y->data;
 		for (uint32_t i = 0; i < size; i++) {
 			if (fabs(casted_x[i] - casted_y[i]) >= eps) {
-				fprintf(stderr, "Error different values at index %i, x = %f and y = %f\n", i, casted_x[i], casted_y[i]);
 				ret = false;
 				break;
 			}
 		}
-	} else if (type == kdouble) {
+	} else if (type == kdouble || type == kfloat64) {
 		double* casted_x = (double*) x->data;
 		double* casted_y = (double*) y->data;
 		for (uint32_t i = 0; i < size; i++) {
 			if (fabs(casted_x[i] - casted_y[i]) >= eps) {
-				fprintf(stderr, "Error different values at index %i, x = %f and y = %f\n", i, casted_x[i], casted_y[i]);
+				ret = false;
+				break;
+			}
+		}
+	} else if (type == kint64) {
+		int64_t* casted_x = (int64_t*) x->data;
+		int64_t* casted_y = (int64_t*) y->data;
+		for (uint32_t i = 0; i < size; i++) {
+			if (casted_x[i] != casted_y[i]) {
 				ret = false;
 				break;
 			}
