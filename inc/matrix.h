@@ -2,6 +2,7 @@
 #define MATRICE_MATRIX_H
 
 #include "data_type.h"
+#include "vector.h"
 
 #ifdef __cplusplus
    #include <cstdlib>
@@ -73,6 +74,9 @@ void matrix_div(const matrix* x, const matrix* y, matrix* z);
 
 // Matrix multiply two matrices
 void matrix_matmul(const matrix* x, const matrix* y, matrix* z);
+
+// Matrix vector multiplication
+void matrix_vecmul(const matrix* x, const vector* y, vector* z);
 
 // Transposed a matrix
 void matrix_transpose(const matrix* x, matrix* y);

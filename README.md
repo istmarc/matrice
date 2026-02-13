@@ -3,18 +3,21 @@
 Column major matrix data type in pure C with bindings
 
 ## Features
-- [x] Basic matrix type for `int`, `float` and `double`
-- [x] Factory functions: `matrix_ones`, `matrix_zeros`, `matrix_fill`  and `matrix_arange`
-- [x] Matrix operations (`matrix_add`, `matrix_sub`, `matrix_mul`, `matrix_div`)
+- [x] Basic vector and matrix type for `int` (`int32`), `float` (`float32`) and `double` (`float64`).
+- [x] Factory functions: `vector_ones`,`vector_zeros`, `vector_fill`, `vector_arange`, `matrix_ones`, `matrix_zeros`, `matrix_fill` and `matrix_arange`.
+- [x] Elementwise vector and matrix operations `vector_add`, `vector_sub`, `vector_mul`, `vector_div`, `matrix_add`, `matrix_sub`, `matrix_mul`, and `matrix_div`.
 - [x] Matrix multiplication using auto vectorization
-- [x] Fixed size vector type
 - [x] Bindings for C++ with classes.
 - [x] Bindings for OCaml
 
 ## Roadmap
+- [] Support for `int64` data type
 - [] Matrix view
 - [] Matrix transpose
 - [] Bindings for Python.
+- [] Matrix decomposition methods : QR, LU, Cholesky
+- [] Determinant
+- [] Inverse of a matrix
 
 ## Data types and operations
 
@@ -22,9 +25,9 @@ Column major matrix data type in pure C with bindings
 
 | matrice | numpy | pytorch | Eigen |
 |---------|-------|--------|-----------|
-| `int`     | np.int | torch.int32; torch.int | int |
-| `float`   | np.float32 | torch.float32; torch.float | float |
-| `double` | np.float64 | torch.float64 | double
+| `int`; `int32` | np.int | torch.int32; torch.int | int |
+| `float`; `float32` | np.float32 | torch.float32; torch.float | float |
+| `double`; `float64` | np.float64 | torch.float64 | double
 
 - Empty, ones and zeros
 
@@ -141,7 +144,7 @@ int main() {
 
 ## OCaml Bindins
 
-In OCaml, two records `Vector.vector` and `Matrix.matrix` are define.
+In OCaml, two records `Vector.vector` and `Matrix.matrix` are defined.
 
 A working example is the following:
 
