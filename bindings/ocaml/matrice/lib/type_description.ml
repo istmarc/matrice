@@ -5,9 +5,10 @@ module Types (F: Ctypes.TYPE) = struct
 
    (*enum data_type*)
    let knone = constant "knone" uint32_t
-   let kint = constant "kint" uint32_t
-   let kfloat = constant "kfloat" uint32_t
-   let kdouble = constant "kdouble" uint32_t
+   let kint32 = constant "kint32" uint32_t
+   let kint64 = constant "kint64" uint32_t
+   let kfloat32 = constant "kfloat32" uint32_t
+   let kfloat64 = constant "kfloat64" uint32_t
 
    (*float32 type*)
    let float32 : float typ = float

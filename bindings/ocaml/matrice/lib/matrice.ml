@@ -5,9 +5,9 @@ module Functions = Function_description.Functions (Matrice__c_generated_function
 open Ctypes
 
 (*data_type*)
-type dtype = None | Int32 | Float32 | Float64
+type dtype = None | Int32 | Float32 | Float64 | Int64
 
-type value = ValueInt32 of int32 | ValueFloat32 of float | ValueFloat64 of float
+type value = ValueInt32 of int32 | ValueInt64 of int64 | ValueFloat32 of float | ValueFloat64 of float
 
 let dtype_to_string(x : dtype) =
    match x with
@@ -15,24 +15,28 @@ let dtype_to_string(x : dtype) =
       | Int32   -> "Int32"
       | Float32 -> "Float32"
       | Float64 -> "Float64"
+      | Int64   -> "Int64"
 
 let to_string(x : value) =
    match x with
    | ValueInt32 i -> Base.Int32.to_string i
    | ValueFloat32 f -> Base.Float.to_string f
    | ValueFloat64 d -> Base.Float.to_string d
+   | ValueInt64 l -> Base.Int64.to_string l
 
 let to_int = function
    | None -> Types.knone
-   | Int32 -> Types.kint
-   | Float32 -> Types.kfloat
-   | Float64 -> Types.kdouble
+   | Int32 -> Types.kint32
+   | Int64 -> Types.kint64
+   | Float32 -> Types.kfloat32
+   | Float64 -> Types.kfloat64
 
 let to_dtype = function
    | 0 -> None
-   | 1 -> Int32
-   | 2 -> Float32
-   | 3 -> Float64
+   | 4 -> Int32
+   | 5 -> Float32
+   | 6 -> Float64
+   | 7 -> Int64
    | _ -> failwith "Unsupported type.\n"
 
 module Vector = struct
@@ -56,32 +60,42 @@ module Vector = struct
 
    (*Get the element at idx*)
    let get_int32 (v:vector) (idx) : int32 = 
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
       let xptr = Ctypes.allocate Ctypes.int32_t 0l in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.vector_ptr_at v.ptr idx voidxptr;
+      Functions.vector_ptr_at v.ptr idx_uint32 voidxptr;
       Ctypes.(!@) xptr
 
    let get_float32 (v:vector) (idx) : float = 
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
       let xptr = Ctypes.allocate Ctypes.float 0. in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.vector_ptr_at v.ptr idx voidxptr;
+      Functions.vector_ptr_at v.ptr idx_uint32 voidxptr;
       let ret = Ctypes.(!@) xptr in
       ret
 
    let get_float64 (v:vector) (idx) : float = 
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
       let xptr = Ctypes.allocate Ctypes.double 0. in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.vector_ptr_at v.ptr idx voidxptr;
+      Functions.vector_ptr_at v.ptr idx_uint32 voidxptr;
+      Ctypes.(!@) xptr
+
+   let get_int64 (v:vector) (idx) : int64 = 
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
+      let xptr = Ctypes.allocate Ctypes.int64_t 0L in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.vector_ptr_at v.ptr idx_uint32 voidxptr;
       Ctypes.(!@) xptr
 
    (*Get the element at idx typed type*)
    let get (vec : vector) (t : dtype) (idx: int) : value  =
-      let idx_uint32 = Unsigned.UInt32.of_int idx in
       match t with
          | None -> failwith "Unknown data type.\n"
-         | Int32 -> ValueInt32(get_int32 vec idx_uint32)
-         | Float32 -> ValueFloat32(get_float32 vec idx_uint32)
-         | Float64 -> ValueFloat64(get_float64 vec idx_uint32)
+         | Int32 -> ValueInt32(get_int32 vec idx)
+         | Float32 -> ValueFloat32(get_float32 vec idx)
+         | Float64 -> ValueFloat64(get_float64 vec idx)
+         | Int64 -> ValueInt64(get_int64 vec idx)
 
    (*Set the element at idx to value*)
    let set_int32 (vec : vector) (idx : int) (v : int32) =
@@ -104,6 +118,15 @@ module Vector = struct
 
    let set_float (vec : vector) (idx : int) (v : float) =
       set_float64 vec idx v
+
+   let set_int64 (vec : vector) (idx : int) (v : int64) =
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
+      let xptr = Ctypes.allocate Ctypes.int64_t v in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.vector_ptr_set vec.ptr idx_uint32 voidxptr
+
+   let set_int (vec : vector) (idx : int) (v : int64) =
+      set_int64 vec idx v
 
    (*Create a vector of ones*)
    let ones (t : dtype) (size : int) : vector = 
@@ -142,6 +165,17 @@ module Vector = struct
 
    let arange_float (size : int) (start : float) : vector =
       arange_float64 size start
+
+   let arange_int64 (size : int) (start : int) : vector =
+      let n = Unsigned.UInt32.of_int size in
+      let startint64 = Signed.Int64.of_int start in
+      let xptr = Ctypes.allocate Ctypes.int64_t startint64 in
+      let voidxptr = Ctypes.to_voidp xptr in
+      let tuint32 = to_int Int64 in
+      {ptr = Functions.vector_ptr_arange tuint32 n voidxptr}
+
+   let arange_int (size : int) (start : int) : vector =
+      arange_int64 size start
 
    (*Get the type*)
    let dtype(vec : vector) : dtype =
@@ -239,44 +273,61 @@ module Matrix = struct
       Functions.matrix_ptr_get v.ptr rows cols voidxptr;
       Ctypes.(!@) xptr
 
+   let get_int64 (v:matrix) (rows) (cols) : int64 = 
+      let xptr = Ctypes.allocate Ctypes.int64_t 0L in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.matrix_ptr_get v.ptr rows cols voidxptr;
+      Ctypes.(!@) xptr
+
    (*Get the element at idx typed type*)
    let get (m : matrix) (t : dtype) (rows : int) (cols : int) : value  =
       let rows_uint32 = Unsigned.UInt32.of_int rows in
       let cols_uint32 = Unsigned.UInt32.of_int cols in
       match t with
-         | None -> failwith "Unknown data type.\n"
-         | Int32 -> ValueInt32(get_int32 m rows_uint32 cols_uint32)
+         | None    -> failwith "Unknown data type.\n"
+         | Int32   -> ValueInt32(get_int32 m rows_uint32 cols_uint32)
          | Float32 -> ValueFloat32(get_float32 m rows_uint32 cols_uint32)
          | Float64 -> ValueFloat64(get_float64 m rows_uint32 cols_uint32)
+         | Int64   -> ValueInt64(get_int64 m rows_uint32 cols_uint32)
 
    (*Get the element at the linear index*)
    let at_int32 (v:matrix) (index) : int32 = 
+      let index_uint32 = Unsigned.UInt32.of_int index in
       let xptr = Ctypes.allocate Ctypes.int32_t 0l in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.matrix_ptr_at v.ptr index voidxptr;
+      Functions.matrix_ptr_at v.ptr index_uint32 voidxptr;
       Ctypes.(!@) xptr
 
    let at_float32 (v:matrix) (index) : float = 
+      let index_uint32 = Unsigned.UInt32.of_int index in
       let xptr = Ctypes.allocate Ctypes.float 0. in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.matrix_ptr_at v.ptr index voidxptr;
+      Functions.matrix_ptr_at v.ptr index_uint32 voidxptr;
       let ret = Ctypes.(!@) xptr in
       ret
 
    let at_float64 (v:matrix) (index) : float = 
+      let index_uint32 = Unsigned.UInt32.of_int index in
       let xptr = Ctypes.allocate Ctypes.double 0. in
       let voidxptr = Ctypes.to_voidp xptr in
-      Functions.matrix_ptr_at v.ptr index voidxptr;
+      Functions.matrix_ptr_at v.ptr index_uint32 voidxptr;
+      Ctypes.(!@) xptr
+
+   let at_int64 (v:matrix) (index) : int64 = 
+      let index_uint32 = Unsigned.UInt32.of_int index in
+      let xptr = Ctypes.allocate Ctypes.int64_t 0L in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.matrix_ptr_at v.ptr index_uint32 voidxptr;
       Ctypes.(!@) xptr
 
    (*Get the element at idx typed type*)
    let at (m : matrix) (t : dtype) (index : int) : value  =
-      let index_uint32 = Unsigned.UInt32.of_int index in
       match t with
-         | None -> failwith "Unknown data type.\n"
-         | Int32 -> ValueInt32(at_int32 m index_uint32)
-         | Float32 -> ValueFloat32(at_float32 m index_uint32)
-         | Float64 -> ValueFloat64(at_float64 m index_uint32)
+         | None    -> failwith "Unknown data type.\n"
+         | Int32   -> ValueInt32(at_int32 m index)
+         | Float32 -> ValueFloat32(at_float32 m index)
+         | Float64 -> ValueFloat64(at_float64 m index)
+         | Int64   -> ValueInt64(at_int64 m index)
 
    (*Set the element at row and col to value*)
    let set_int32 (m : matrix) (row : int) (col: int) (v : int32) =
@@ -303,6 +354,16 @@ module Matrix = struct
    let set_float (m : matrix) (row : int) (col : int) (v : float) =
       set_float64 m row col v
 
+   let set_int64 (m : matrix) (row : int) (col: int) (v : int64) =
+      let row_uint32 = Unsigned.UInt32.of_int row in
+      let col_uint32 = Unsigned.UInt32.of_int col in
+      let xptr = Ctypes.allocate Ctypes.int64_t v in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.matrix_ptr_set m.ptr row_uint32 col_uint32 voidxptr
+
+   let set_int (m : matrix) (row : int) (col : int) (v : int64) =
+      set_int64 m row col v
+
    (*Set the element at row and col to value*)
    let set_at_int32 (m : matrix) (idx : int) (v : int32) =
       let idx_uint32 = Unsigned.UInt32.of_int idx in
@@ -324,6 +385,15 @@ module Matrix = struct
 
    let set_at_float (m : matrix) (idx : int) (v : float) =
       set_at_float64 m idx v
+
+   let set_at_int64 (m : matrix) (idx : int) (v : int64) =
+      let idx_uint32 = Unsigned.UInt32.of_int idx in
+      let xptr = Ctypes.allocate Ctypes.int64_t v in
+      let voidxptr = Ctypes.to_voidp xptr in
+      Functions.matrix_ptr_set_at m.ptr idx_uint32 voidxptr
+
+   let set_at_int (m : matrix) (idx : int) (v : int64) =
+      set_at_int64 m idx v
 
    (*Create a matrix of ones*)
    let ones (t : dtype) (rows : int) (cols : int): matrix = 
@@ -384,6 +454,21 @@ module Matrix = struct
 
    let arange_float (rows : int) (cols : int) (start : float) : matrix =
       arange_float64 rows cols start
+
+   let arange_int64 (rows : int) (cols : int) (start : int) : matrix =
+      let rows_uint32 = Unsigned.UInt32.of_int rows in
+      let cols_uint32 = Unsigned.UInt32.of_int cols in
+      let startint64 = Signed.Int64.of_int start in
+      let xptr = Ctypes.allocate Ctypes.int64_t startint64 in
+      let voidxptr = Ctypes.to_voidp xptr in
+      let tuint32 = to_int Int64 in
+      let shape = Ctypes.allocate_n Ctypes.uint32_t ~count:2 in
+      shape <-@ rows_uint32;
+      (shape +@ 1) <-@ cols_uint32;
+      {ptr = Functions.matrix_ptr_arange tuint32 shape voidxptr}
+
+   let arange_int (rows : int) (cols : int) (start : int) : matrix =
+      arange_int64 rows cols start
 
    (*Get the type*)
    let dtype(m : matrix) : dtype =
