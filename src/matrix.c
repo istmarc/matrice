@@ -4,7 +4,7 @@
 #include <math.h>
 
 bool are_int32(const matrix* x, const matrix* y) {
-	return x->type == kint && y->type == kint;
+	return (x->type == kint || x->type == kint32) && (y->type == kint || y->type == kint32);
 }
 
 bool are_float32(const matrix* x, const matrix* y) {
